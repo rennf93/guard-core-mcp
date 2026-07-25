@@ -81,7 +81,12 @@ def validate_config(
     known_fields = set(model.model_fields)
 
     unknown_fields = [
-        {"name": key, "did_you_mean": difflib.get_close_matches(key, known_fields, n=1)}
+        {
+            "name": key,
+            "did_you_mean": difflib.get_close_matches(
+                key, known_fields, n=3, cutoff=0.75
+            ),
+        }
         for key in config
         if key not in known_fields
     ]
