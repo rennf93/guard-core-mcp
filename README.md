@@ -7,9 +7,6 @@ Covers [`fastapi-guard`](https://github.com/rennf93/fastapi-guard),
 [`guard-core`](https://github.com/rennf93/guard-core) and
 [`guard-agent`](https://github.com/rennf93/guard-agent).
 
-> **Status: 0.0.1, early scaffold.** Only the `versions` tool is implemented. The config,
-> documentation and detection tools described below are in progress.
-
 ## Why
 
 Your agent can already read the docs. What it cannot do is tell you that the `redis_failopen`

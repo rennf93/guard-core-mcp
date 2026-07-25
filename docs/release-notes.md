@@ -10,10 +10,10 @@ Release Notes
 
 ___
 
-Unreleased
-----------
+v0.1.0 (2026-07-25)
+-------------------
 
-Config, documentation and detection tools (Unreleased)
+Config, documentation and detection tools (v0.1.0)
 --------------------------------------------------------
 
 - **Added** — `validate_config` — validates a config dict against the real Pydantic `SecurityConfig` / `AgentConfig` model for `fastapi-guard`, `guard-core`, or `guard-agent`, reporting unknown keys (with typo suggestions), validation errors, and deprecation warnings.
