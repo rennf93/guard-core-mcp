@@ -1,0 +1,14 @@
+{
+  "fastapi-guard": {
+    "site_url": "https://rennf93.github.io/fastapi-guard/latest/",
+    "version": "7.3.0"
+  },
+  "guard-agent": {
+    "site_url": "https://rennf93.github.io/guard-agent/latest/",
+    "version": "2.7.0"
+  },
+  "guard-core": {
+    "site_url": "https://rennf93.github.io/guard-core/latest/",
+    "version": "3.5.0"
+  }
+}
