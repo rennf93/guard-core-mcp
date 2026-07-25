@@ -6,10 +6,12 @@ from guard_core_mcp import __version__
 from guard_core_mcp.server import (
     GUARD_DISTRIBUTIONS,
     config_fields,
+    get_doc,
     installed_guard_versions,
     main,
     mcp,
     missing_library_error,
+    search_docs,
     validate_config,
     versions,
 )
@@ -75,3 +77,17 @@ async def test_config_tools_are_registered() -> None:
     registered = {tool.name for tool in await mcp.list_tools()}
 
     assert {"validate_config", "config_fields"} <= registered
+
+
+async def test_docs_tools_are_registered() -> None:
+    registered = {tool.name for tool in await mcp.list_tools()}
+
+    assert {"search_docs", "get_doc"} <= registered
+
+
+def test_search_docs_tool_returns_results() -> None:
+    assert search_docs("rate limiting")["results"]
+
+
+def test_get_doc_tool_returns_the_page_content() -> None:
+    assert get_doc("guard-core", "index.md")["content"]

@@ -5,6 +5,7 @@ from mcp.server.fastmcp import FastMCP
 
 from guard_core_mcp import __version__
 from guard_core_mcp import config as config_module
+from guard_core_mcp import docs as docs_module
 
 GUARD_DISTRIBUTIONS = ("guard-core", "fastapi-guard", "guard-agent")
 
@@ -82,6 +83,27 @@ def config_fields(query: str, package: str = "fastapi-guard") -> dict[str, Any]:
         return missing_library_error(exception)
     except ValueError as exception:
         return {"error": str(exception)}
+
+
+@mcp.tool()
+def search_docs(
+    query: str, package: str | None = None, limit: int = 5
+) -> dict[str, Any]:
+    """Search the bundled Guard documentation and return citable pages.
+
+    Covers fastapi-guard, guard-core and guard-agent. Omit package to search all
+    three. Each result carries the live documentation URL for that page.
+    """
+    return docs_module.search_docs(query, package, limit)
+
+
+@mcp.tool()
+def get_doc(package: str, path: str) -> dict[str, Any]:
+    """Return the full text of one bundled documentation page.
+
+    Use the package and path from a search_docs result.
+    """
+    return docs_module.get_doc(package, path)
 
 
 def main() -> None:
