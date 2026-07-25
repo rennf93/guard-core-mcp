@@ -172,4 +172,9 @@ jobs:
           git clone --depth 1 https://github.com/rennf93/guard-core ../guard-core
           git clone --depth 1 https://github.com/rennf93/guard-agent ../guard-agent
           uv run python scripts/sync_docs.py
-          git diff --exit-code guard_core_mcp/_docs
+          DRIFT=$(git status --porcelain guard_core_mcp/_docs)
+          if [ -n "$DRIFT" ]; then
+            echo "$DRIFT"
+            echo "::error::guard_core_mcp/_docs is stale against the upstream repos — rerun scripts/sync_docs.py and commit the result"
+            exit 1
+          fi

@@ -203,7 +203,12 @@ sync-docs:
 # Check the vendored docs are in sync with their source repos
 .PHONY: check-docs-drift
 check-docs-drift: sync-docs
-	@git diff --exit-code guard_core_mcp/_docs
+	@DRIFT="$$(git status --porcelain guard_core_mcp/_docs)"; \
+	if [ -n "$$DRIFT" ]; then \
+		echo "$$DRIFT"; \
+		echo "guard_core_mcp/_docs is stale against the upstream repos — rerun scripts/sync_docs.py and commit the result"; \
+		exit 1; \
+	fi
 
 # Serve docs
 .PHONY: serve-docs
