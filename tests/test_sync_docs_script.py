@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -91,3 +92,35 @@ def test_sync_is_idempotent_and_drops_files_removed_from_the_source(
     sync_docs.sync("example-package", "https://example.invalid/")
 
     assert {path.name for path in destination.rglob("*.md")} == {"index.md"}
+
+
+def test_main_writes_manifest_and_vendors_markdown_for_every_repository(
+    tmp_path, monkeypatch
+) -> None:
+    workdir = tmp_path / "workdir"
+    workdir.mkdir()
+    for package in ("alpha", "beta"):
+        docs = tmp_path / package / "docs"
+        docs.mkdir(parents=True)
+        (docs / "index.md").write_text(f"# {package}\n")
+        (tmp_path / package / "pyproject.toml").write_text('version = "1.0.0"\n')
+    monkeypatch.chdir(workdir)
+    monkeypatch.setattr(sync_docs, "DOCS_ROOT", tmp_path / "_docs")
+    monkeypatch.setattr(
+        sync_docs,
+        "REPOSITORIES",
+        {
+            "alpha": "https://alpha.example.invalid/",
+            "beta": "https://beta.example.invalid/",
+        },
+    )
+
+    sync_docs.main()
+
+    manifest = json.loads((tmp_path / "_docs" / "manifest.json").read_text())
+    assert manifest == {
+        "alpha": {"site_url": "https://alpha.example.invalid/", "version": "1.0.0"},
+        "beta": {"site_url": "https://beta.example.invalid/", "version": "1.0.0"},
+    }
+    assert (tmp_path / "_docs" / "alpha" / "index.md").read_text() == "# alpha\n"
+    assert (tmp_path / "_docs" / "beta" / "index.md").read_text() == "# beta\n"
