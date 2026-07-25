@@ -5,6 +5,7 @@ from mcp.server.fastmcp import FastMCP
 
 from guard_core_mcp import __version__
 from guard_core_mcp import config as config_module
+from guard_core_mcp import detection as detection_module
 from guard_core_mcp import docs as docs_module
 
 GUARD_DISTRIBUTIONS = ("guard-core", "fastapi-guard", "guard-agent")
@@ -104,6 +105,30 @@ def get_doc(package: str, path: str) -> dict[str, Any]:
     Use the package and path from a search_docs result.
     """
     return docs_module.get_doc(package, path)
+
+
+@mcp.tool()
+async def check_payload(
+    path: str = "/",
+    method: str = "GET",
+    query: dict[str, str] | None = None,
+    headers: dict[str, str] | None = None,
+    body: str | None = None,
+    config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Run a request through guard-core's real detection engine.
+
+    Answers whether a given request would be blocked and which pattern matched,
+    which is the reliable way to explain a false positive or confirm that an attack
+    payload is actually caught. config accepts SecurityConfig fields to test how a
+    setting changes the verdict.
+    """
+    try:
+        return await detection_module.check_payload(
+            path, method, query, headers, body, config
+        )
+    except ModuleNotFoundError as exception:
+        return missing_library_error(exception)
 
 
 def main() -> None:

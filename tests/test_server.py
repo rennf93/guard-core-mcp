@@ -2,9 +2,11 @@ import importlib
 import importlib.metadata
 
 import guard_core_mcp.config
+import guard_core_mcp.detection
 from guard_core_mcp import __version__
 from guard_core_mcp.server import (
     GUARD_DISTRIBUTIONS,
+    check_payload,
     config_fields,
     get_doc,
     installed_guard_versions,
@@ -91,3 +93,28 @@ def test_search_docs_tool_returns_results() -> None:
 
 def test_get_doc_tool_returns_the_page_content() -> None:
     assert get_doc("guard-core", "index.md")["content"]
+
+
+async def test_detection_tool_is_registered() -> None:
+    registered = {tool.name for tool in await mcp.list_tools()}
+
+    assert {"check_payload"} <= registered
+
+
+async def test_check_payload_tool_returns_the_detection_report() -> None:
+    result = await check_payload(path="/items", query={"q": "1' OR '1'='1"})
+
+    assert result["is_threat"] is True
+
+
+async def test_check_payload_tool_reports_a_missing_library_instead_of_raising(
+    monkeypatch,
+) -> None:
+    async def raise_missing(*args: object, **kwargs: object) -> None:
+        raise ModuleNotFoundError(name="guard_core")
+
+    monkeypatch.setattr(guard_core_mcp.detection, "check_payload", raise_missing)
+
+    result = await check_payload(path="/")
+
+    assert "not installed" in result["error"]
