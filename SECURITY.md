@@ -6,7 +6,7 @@ Guard Core MCP is pre-1.0. We provide security updates for the latest published 
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.0.x   | :white_check_mark: |
+| 0.1.x   | :white_check_mark: |
 
 Once the project reaches 1.0, this table will track supported major versions the same way the rest of the Guard ecosystem does.
 

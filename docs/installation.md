@@ -89,7 +89,7 @@ for every Guard library your project actually depends on:
 
 ```json
 {
-  "guard_core_mcp": "0.0.1",
+  "guard_core_mcp": "0.1.0",
   "installed": {
     "guard-core": "3.5.0",
     "fastapi-guard": "7.3.0",
