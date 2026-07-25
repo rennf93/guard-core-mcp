@@ -1,5 +1,7 @@
 import importlib
 import importlib.metadata
+import json
+from pathlib import Path
 
 import guard_core_mcp.config
 import guard_core_mcp.detection
@@ -29,8 +31,19 @@ def test_versions_reports_every_guard_distribution() -> None:
 def test_versions_reports_the_bundled_docs_versions() -> None:
     report = versions()
 
-    assert set(report["docs_bundled_for"]) == set(GUARD_DISTRIBUTIONS)
-    assert all(report["docs_bundled_for"].values())
+    manifest_path = (
+        Path(__file__).resolve().parent.parent
+        / "guard_core_mcp"
+        / "_docs"
+        / "manifest.json"
+    )
+    bundled_manifest: dict[str, dict[str, str]] = json.loads(
+        manifest_path.read_text(encoding="utf-8")
+    )
+
+    assert report["docs_bundled_for"] == {
+        package: bundled_manifest[package]["version"] for package in GUARD_DISTRIBUTIONS
+    }
 
 
 def test_absent_distribution_reports_none_instead_of_raising(monkeypatch) -> None:
