@@ -26,6 +26,13 @@ def test_versions_reports_every_guard_distribution() -> None:
     assert set(report["installed"]) == set(GUARD_DISTRIBUTIONS)
 
 
+def test_versions_reports_the_bundled_docs_versions() -> None:
+    report = versions()
+
+    assert set(report["docs_bundled_for"]) == set(GUARD_DISTRIBUTIONS)
+    assert all(report["docs_bundled_for"].values())
+
+
 def test_absent_distribution_reports_none_instead_of_raising(monkeypatch) -> None:
     def raise_not_found(name: str) -> str:
         raise importlib.metadata.PackageNotFoundError(name)

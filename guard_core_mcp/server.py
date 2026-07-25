@@ -27,12 +27,18 @@ def installed_guard_versions() -> dict[str, str | None]:
 def versions() -> dict[str, Any]:
     """Report which Guard libraries this server can introspect, and at what version.
 
-    A null version means that library is not installed in the interpreter running
+    A null installed version means that library is absent from the interpreter running
     this server, so any answer about it would be a guess rather than introspection.
+    Compare installed against docs_bundled_for before trusting a documentation answer
+    about a version-specific feature.
     """
     return {
         "guard_core_mcp": __version__,
         "installed": installed_guard_versions(),
+        "docs_bundled_for": {
+            package: entry["version"]
+            for package, entry in docs_module.manifest().items()
+        },
     }
 
 
