@@ -23,6 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "mcp",
+    "pydantic",
 ]
 
 [project.scripts]
@@ -205,6 +206,4 @@ per_rule_ignores = { "DEP002" = [
     "semgrep",
     "vulture",
     "xenon",
-], "DEP003" = [
-    "pydantic",
 ] }
