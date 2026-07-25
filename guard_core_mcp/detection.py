@@ -1,6 +1,25 @@
 import time
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from typing import Any
+
+from pydantic import ValidationError
+
+from guard_core_mcp import config as config_module
+
+
+class _CaseInsensitiveHeaders(Mapping[str, str]):
+    def __init__(self, headers: Mapping[str, str]) -> None:
+        self._original = dict(headers)
+        self._lowercased = {key.lower(): value for key, value in self._original.items()}
+
+    def __getitem__(self, key: str) -> str:
+        return self._lowercased[key.lower()]
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._original)
+
+    def __len__(self) -> int:
+        return len(self._original)
 
 
 class _SyntheticRequest:
@@ -14,7 +33,7 @@ class _SyntheticRequest:
     ) -> None:
         self._path = path
         self._method = method
-        self._headers = headers
+        self._headers = _CaseInsensitiveHeaders(headers)
         self._query_params = query_params
         self._body = body_content
 
@@ -73,7 +92,13 @@ async def check_payload(
     from guard_core.protocols.request_protocol import GuardRequest
     from guard_core.utils import detect_penetration_attempt
 
-    security_config = SecurityConfig(**{**(config or {}), "enable_redis": False})
+    try:
+        security_config = SecurityConfig(**{**(config or {}), "enable_redis": False})
+    except ValidationError as exception:
+        return {
+            "error": "invalid config",
+            "errors": config_module.parse_validation_error(exception),
+        }
     request: GuardRequest = _SyntheticRequest(
         path=path,
         method=method,

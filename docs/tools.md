@@ -336,7 +336,10 @@ guard-core's real `detect_penetration_attempt`, using a `SecurityConfig` built f
 (defaulting to guard-core's defaults) with `enable_redis` always forced to `False` — the sandbox
 never touches Redis, so results are Redis-independent by construction. `elapsed_ms` reflects
 actual detection time for that call and varies between runs; the values below are one real
-sample, not a promise.
+sample, not a promise. `headers` is matched case-insensitively, the same way guard-core's own
+`GuardRequest` protocol requires. A `config` value that fails `SecurityConfig` validation returns
+`{"error": "invalid config", "errors": [...]}`, with each entry in the same `field`/`message`/
+`input` shape `validate_config` reports for the identical failure.
 
 **Example call — a SQL injection payload**:
 

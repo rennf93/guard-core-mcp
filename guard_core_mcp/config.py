@@ -74,6 +74,17 @@ def _deprecation_entry(message: str, known_fields: set[str]) -> dict[str, str | 
     }
 
 
+def parse_validation_error(exception: ValidationError) -> list[dict[str, Any]]:
+    return [
+        {
+            "field": ".".join(str(part) for part in error["loc"]),
+            "message": error["msg"],
+            "input": repr(error.get("input")),
+        }
+        for error in exception.errors()
+    ]
+
+
 def validate_config(
     config: dict[str, Any], package: str = "fastapi-guard"
 ) -> dict[str, Any]:
@@ -97,14 +108,7 @@ def validate_config(
         try:
             model(**config)
         except ValidationError as exception:
-            errors = [
-                {
-                    "field": ".".join(str(part) for part in error["loc"]),
-                    "message": error["msg"],
-                    "input": repr(error.get("input")),
-                }
-                for error in exception.errors()
-            ]
+            errors = parse_validation_error(exception)
 
     deprecated = [
         _deprecation_entry(str(warning.message), known_fields)

@@ -1,6 +1,12 @@
+from urllib.parse import quote
+
 import pytest
 
-from guard_core_mcp.detection import _SyntheticRequest, check_payload
+from guard_core_mcp.detection import (
+    _CaseInsensitiveHeaders,
+    _SyntheticRequest,
+    check_payload,
+)
 
 
 async def test_sql_injection_in_a_query_parameter_is_a_threat() -> None:
@@ -37,6 +43,31 @@ async def test_json_body_is_scanned() -> None:
     )
 
     assert result["is_threat"] is True
+
+
+async def test_malformed_config_returns_structured_errors_instead_of_raising() -> None:
+    result = await check_payload(config={"trusted_proxy_depth": "not-an-int"})
+
+    assert result["error"] == "invalid config"
+    assert result["errors"][0]["field"] == "trusted_proxy_depth"
+    assert "valid integer" in result["errors"][0]["message"]
+
+
+async def test_header_case_mismatch_no_longer_hides_a_form_encoded_sql_injection() -> (
+    None
+):
+    encoded_payload = quote("1' OR '1'='1")
+
+    result = await check_payload(
+        path="/submit",
+        method="POST",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        body=f"q={encoded_payload}",
+        config={"excluded_detection_body_fields": ["unused"]},
+    )
+
+    assert result["is_threat"] is True
+    assert result["threat_categories"] == ["sqli"]
 
 
 async def test_redis_cannot_be_enabled_by_a_caller_override() -> None:
@@ -86,3 +117,12 @@ def test_synthetic_request_exposes_every_protocol_member() -> None:
     assert request.method == "POST"
     assert request.state is None
     assert request.scope == {}
+
+
+def test_case_insensitive_headers_look_up_by_any_casing() -> None:
+    headers = _CaseInsensitiveHeaders({"Content-Type": "application/json"})
+
+    assert headers["content-type"] == "application/json"
+    assert headers.get("CONTENT-TYPE") == "application/json"
+    assert list(headers) == ["Content-Type"]
+    assert len(headers) == 1
