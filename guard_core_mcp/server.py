@@ -119,7 +119,7 @@ async def check_payload(
     method: str = "GET",
     query: dict[str, str] | None = None,
     headers: dict[str, str] | None = None,
-    body: str | None = None,
+    body: str | dict[str, Any] | list[Any] | None = None,
     config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run a request through guard-core's real detection engine.
@@ -128,6 +128,9 @@ async def check_payload(
     which is the reliable way to explain a false positive or confirm that an attack
     payload is actually caught. config accepts SecurityConfig fields to test how a
     setting changes the verdict.
+
+    body takes either a raw string or a JSON object or array, which is serialized
+    for you — pass the request body in whatever shape you already have it.
     """
     try:
         return await detection_module.check_payload(

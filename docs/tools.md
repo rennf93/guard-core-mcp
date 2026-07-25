@@ -317,7 +317,7 @@ async def check_payload(
     method: str = "GET",
     query: dict[str, str] | None = None,
     headers: dict[str, str] | None = None,
-    body: str | None = None,
+    body: str | dict[str, Any] | list[Any] | None = None,
     config: dict[str, Any] | None = None,
 ) -> dict[str, Any]
 ```
@@ -328,7 +328,7 @@ async def check_payload(
 | `method` | `str` | `"GET"` | HTTP method |
 | `query` | `dict[str, str] \| None` | `None` | Query parameters |
 | `headers` | `dict[str, str] \| None` | `None` | Request headers |
-| `body` | `str \| None` | `None` | Request body |
+| `body` | `str \| dict \| list \| None` | `None` | Request body. A raw string is sent as-is; a JSON object or array is serialized for you |
 | `config` | `dict[str, Any] \| None` | `None` | `SecurityConfig` fields to test how a setting changes the verdict |
 
 The only async tool. Builds a synthetic request from the arguments and runs it through

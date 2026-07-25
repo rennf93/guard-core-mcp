@@ -6,6 +6,7 @@ from guard_core_mcp.detection import (
     _CaseInsensitiveHeaders,
     _SyntheticRequest,
     check_payload,
+    encode_body,
 )
 
 
@@ -126,3 +127,29 @@ def test_case_insensitive_headers_look_up_by_any_casing() -> None:
     assert headers.get("CONTENT-TYPE") == "application/json"
     assert list(headers) == ["Content-Type"]
     assert len(headers) == 1
+
+
+async def test_json_object_body_is_serialized_rather_than_rejected() -> None:
+    result = await check_payload(
+        path="/api",
+        method="POST",
+        headers={"Content-Type": "application/json"},
+        body={"cmd": "; cat /etc/passwd"},
+    )
+
+    assert result["is_threat"] is True
+
+
+async def test_json_array_body_is_serialized() -> None:
+    result = await check_payload(
+        path="/api", method="POST", body=["harmless", "values"]
+    )
+
+    assert result["is_threat"] is False
+
+
+def test_encode_body_handles_every_accepted_shape() -> None:
+    assert encode_body(None) == b""
+    assert encode_body("raw") == b"raw"
+    assert encode_body({"a": 1}) == b'{"a": 1}'
+    assert encode_body([1, 2]) == b"[1, 2]"

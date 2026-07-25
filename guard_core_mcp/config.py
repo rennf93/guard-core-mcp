@@ -85,6 +85,19 @@ def parse_validation_error(exception: ValidationError) -> list[dict[str, Any]]:
     ]
 
 
+def _retry_without_rejected_fields(
+    model: type[BaseModel], config: dict[str, Any], exception: ValidationError
+) -> None:
+    rejected = {
+        str(error["loc"][0]) for error in exception.errors() if error.get("loc")
+    }
+    remaining = {key: value for key, value in config.items() if key not in rejected}
+    try:
+        model(**remaining)
+    except ValidationError:
+        pass
+
+
 def validate_config(
     config: dict[str, Any], package: str = "fastapi-guard"
 ) -> dict[str, Any]:
@@ -109,12 +122,18 @@ def validate_config(
             model(**config)
         except ValidationError as exception:
             errors = parse_validation_error(exception)
+            _retry_without_rejected_fields(model, config, exception)
 
-    deprecated = [
-        _deprecation_entry(str(warning.message), known_fields)
-        for warning in caught
-        if issubclass(warning.category, DeprecationWarning)
-    ]
+    deprecated = []
+    reported: set[str] = set()
+    for warning in caught:
+        if not issubclass(warning.category, DeprecationWarning):
+            continue
+        message = str(warning.message)
+        if message in reported:
+            continue
+        reported.add(message)
+        deprecated.append(_deprecation_entry(message, known_fields))
 
     return {
         "valid": not errors and not unknown_fields,

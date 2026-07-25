@@ -1,3 +1,4 @@
+import json
 import time
 from collections.abc import Iterator, Mapping
 from typing import Any
@@ -80,12 +81,20 @@ class _SyntheticRequest:
         return {}
 
 
+def encode_body(body: str | dict[str, Any] | list[Any] | None) -> bytes:
+    if body is None:
+        return b""
+    if isinstance(body, str):
+        return body.encode()
+    return json.dumps(body).encode()
+
+
 async def check_payload(
     path: str = "/",
     method: str = "GET",
     query: dict[str, str] | None = None,
     headers: dict[str, str] | None = None,
-    body: str | None = None,
+    body: str | dict[str, Any] | list[Any] | None = None,
     config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     from guard_core import SecurityConfig
@@ -104,7 +113,7 @@ async def check_payload(
         method=method,
         headers=headers or {},
         query_params=query or {},
-        body_content=(body or "").encode(),
+        body_content=encode_body(body),
     )
 
     started = time.perf_counter()

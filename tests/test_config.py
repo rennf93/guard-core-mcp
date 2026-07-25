@@ -1,8 +1,11 @@
 import importlib.metadata
 import typing
+import warnings
 
 import pytest
+from pydantic import BaseModel, model_validator
 
+import guard_core_mcp.config
 from guard_core_mcp.config import (
     _format_annotation,
     config_fields,
@@ -145,3 +148,57 @@ def test_query_matching_nothing_returns_no_matches() -> None:
 
     assert result["exact"] is None
     assert result["matches"] == []
+
+
+def test_deprecation_is_still_reported_when_another_field_fails_validation() -> None:
+    report = validate_config({"ipinfo_token": "abc", "trusted_proxy_depth": "two"})
+
+    assert report["errors"][0]["field"] == "trusted_proxy_depth"
+    assert [entry["field"] for entry in report["deprecated"]] == ["ipinfo_token"]
+
+
+def test_each_deprecation_is_reported_once() -> None:
+    report = validate_config(
+        {"ipinfo_token": "abc", "ipinfo_db_path": "/tmp/db", "redis_prefix": 7}
+    )
+
+    messages = [entry["message"] for entry in report["deprecated"]]
+    assert len(messages) == len(set(messages))
+    assert sorted(entry["field"] for entry in report["deprecated"]) == [
+        "ipinfo_db_path",
+        "ipinfo_token",
+    ]
+
+
+def test_retry_that_still_fails_reports_no_deprecations_instead_of_raising() -> None:
+    report = validate_config({"trusted_proxy_depth": "two", "enable_enrichment": True})
+
+    assert report["errors"][0]["field"] == "trusted_proxy_depth"
+    assert report["deprecated"] == []
+
+
+def test_unrelated_warnings_are_ignored_and_repeats_collapse(monkeypatch) -> None:
+    class NoisyModel(BaseModel):
+        value: int = 0
+
+        @model_validator(mode="after")
+        def emit_warnings(self) -> "NoisyModel":
+            warnings.warn("unrelated advisory", UserWarning, stacklevel=2)
+            for _ in range(2):
+                warnings.warn(
+                    "value is deprecated and will be removed",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+            return self
+
+    monkeypatch.setattr(
+        guard_core_mcp.config, "resolve_model", lambda package: (NoisyModel, "1.0")
+    )
+
+    report = validate_config({"value": 1})
+
+    assert [entry["message"] for entry in report["deprecated"]] == [
+        "value is deprecated and will be removed"
+    ]
+    assert report["deprecated"][0]["field"] == "value"
