@@ -121,3 +121,32 @@ def validate_config(
         "unknown_fields": unknown_fields,
         "deprecated": deprecated,
     }
+
+
+def config_fields(query: str, package: str = "fastapi-guard") -> dict[str, Any]:
+    model, version = resolve_model(package)
+    fields = model.model_fields
+
+    exact = describe_field(query, fields[query]) if query in fields else None
+
+    tokens = query.lower().split()
+    matches = [
+        describe_field(name, info)
+        for name, info in fields.items()
+        if name != query
+        and all(token in f"{name} {info.description or ''}".lower() for token in tokens)
+    ]
+
+    if not matches and exact is None:
+        matches = [
+            describe_field(name, fields[name])
+            for name in difflib.get_close_matches(query, list(fields), n=5)
+        ]
+
+    return {
+        "package": package,
+        "version": version,
+        "query": query,
+        "exact": exact,
+        "matches": matches,
+    }

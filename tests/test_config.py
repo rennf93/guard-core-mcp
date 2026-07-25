@@ -5,6 +5,7 @@ import pytest
 
 from guard_core_mcp.config import (
     _format_annotation,
+    config_fields,
     describe_field,
     resolve_model,
     validate_config,
@@ -111,3 +112,36 @@ def test_resolve_model_reports_none_version_when_package_metadata_is_missing(
     _, version = resolve_model("guard-core")
 
     assert version is None
+
+
+def test_exact_name_returns_the_field() -> None:
+    result = config_fields("passive_mode")
+
+    assert result["exact"]["name"] == "passive_mode"
+    assert result["exact"]["default"] == "False"
+
+
+def test_multi_word_query_matches_across_name_and_description() -> None:
+    names = {match["name"] for match in config_fields("redis timeout")["matches"]}
+
+    assert "redis_socket_connect_timeout" in names
+
+
+def test_query_matching_only_a_description_still_finds_the_field() -> None:
+    names = {match["name"] for match in config_fields("Log-Only")["matches"]}
+
+    assert "passive_mode" in names
+
+
+def test_misspelled_name_falls_back_to_fuzzy_matches() -> None:
+    result = config_fields("redis_failopen")
+
+    assert result["exact"] is None
+    assert "redis_fail_open" in {match["name"] for match in result["matches"]}
+
+
+def test_query_matching_nothing_returns_no_matches() -> None:
+    result = config_fields("quantum entanglement")
+
+    assert result["exact"] is None
+    assert result["matches"] == []
