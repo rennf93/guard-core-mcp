@@ -1,0 +1,16 @@
+services:
+    guard-core-mcp:
+      build:
+        context: .
+        args:
+          PYTHON_VERSION: ${PYTHON_VERSION:-3.10}
+      image: guard-core-mcp-py${PYTHON_VERSION:-3.10}
+      command: guard-core-mcp
+      stdin_open: true
+      tty: true
+      volumes:
+        - ./guard_core_mcp:/app/guard_core_mcp:z
+        - ./tests:/app/tests:z
+        - ./pyproject.toml:/app/pyproject.toml:z
+        - ./uv.lock:/app/uv.lock:z
+        - ./vulture_whitelist.py:/app/vulture_whitelist.py:z

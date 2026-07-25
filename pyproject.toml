@@ -33,14 +33,24 @@ Homepage = "https://github.com/rennf93/guard-core-mcp"
 
 [project.optional-dependencies]
 dev = [
+    "bandit[toml]",
+    "deptry",
     "fastapi-guard",
     "guard-agent",
     "guard-core",
     "mypy",
+    "pip-audit",
+    "pre-commit",
+    "pymarkdownlnt",
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
+    "radon",
     "ruff",
+    "safety",
+    "semgrep",
+    "vulture",
+    "xenon",
 ]
 
 [build-system]
@@ -59,7 +69,10 @@ exclude = [
     ".claude/",
     "CLAUDE.md",
     ".pre-commit-config.yaml",
+    "compose.yml",
+    "Dockerfile",
     "Makefile",
+    "vulture_whitelist.py",
     "tests/",
 ]
 
@@ -98,3 +111,100 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 exclude = [".venv"]
+
+[tool.pymarkdown.plugins.md007]
+enabled = true
+indent = 2
+
+[tool.pymarkdown.plugins.md012]
+enabled = true
+maximum = 2
+
+[tool.pymarkdown.plugins.md013]
+enabled = false
+
+[tool.pymarkdown.plugins.md024]
+enabled = true
+siblings_only = true
+
+[tool.pymarkdown.plugins.md033]
+enabled = false
+
+[tool.pymarkdown.plugins.md035]
+enabled = false
+
+[tool.pymarkdown.plugins.md041]
+enabled = false
+
+[tool.pymarkdown.plugins.md046]
+enabled = false
+
+[tool.pymarkdown.plugins.md029]
+enabled = false
+
+[tool.vulture]
+paths = ["guard_core_mcp", "tests", "vulture_whitelist.py"]
+exclude = ["**/conftest.py", ".venv", "guard_core_mcp/_docs"]
+min_confidence = 100
+ignore_decorators = [
+    "@mcp.tool",
+    "@pytest.fixture",
+    "@pytest.mark.*",
+]
+ignore_names = [
+    "test_*",
+    "Test*",
+    "cleanup_*",
+    "mock_*",
+    "expected_*",
+    "exc_*",
+    "__*__",
+]
+sort_by_size = true
+
+[tool.bandit]
+skips = ["B101"]
+exclude_dirs = ["tests", ".venv", "guard_core_mcp/_docs"]
+severity = "medium"
+
+[tool.radon]
+exclude = "tests/*,.venv/*,vulture_whitelist.py,guard_core_mcp/_docs/*"
+cc_min = "C"
+mi_min = "A"
+no_assert = false
+show_closures = true
+total_average = true
+
+[tool.xenon]
+max_absolute = "B"
+max_modules = "A"
+max_average = "A"
+exclude = ["tests/*", ".venv/*", "vulture_whitelist.py", "guard_core_mcp/_docs/*"]
+ignore = []
+
+[tool.deptry]
+exclude = ["tests", ".venv", "vulture_whitelist.py", "guard_core_mcp/_docs"]
+extend_exclude = ["conftest.py"]
+known_first_party = ["guard_core_mcp"]
+per_rule_ignores = { "DEP002" = [
+    "bandit",
+    "deptry",
+    "fastapi-guard",
+    "guard-agent",
+    "guard-core",
+    "mypy",
+    "pip-audit",
+    "pre-commit",
+    "pymarkdownlnt",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "radon",
+    "ruff",
+    "safety",
+    "semgrep",
+    "vulture",
+    "xenon",
+], "DEP003" = [
+    "pydantic",
+] }

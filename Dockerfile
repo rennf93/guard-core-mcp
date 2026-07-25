@@ -1,0 +1,28 @@
+ARG PYTHON_VERSION=3.10
+FROM python:${PYTHON_VERSION}-slim
+
+RUN apt-get update && apt-get install -y \
+    libsodium23 \
+    wget \
+    build-essential \
+    libffi-dev \
+    curl
+
+WORKDIR /app
+
+ENV PIP_NO_CACHE_DIR=false \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=10 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+RUN pip install uv
+
+COPY pyproject.toml uv.lock* README.md /app/
+
+RUN uv sync --extra dev --frozen
+
+ENV PATH="/app/.venv/bin:$PATH"
+
+COPY guard_core_mcp/ /app/guard_core_mcp/
+COPY tests/ /app/tests/

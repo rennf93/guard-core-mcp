@@ -1,0 +1,70 @@
+"area: server":
+  - changed-files:
+      - any-glob-to-any-file:
+          - guard_core_mcp/server.py
+          - tests/test_server.py
+
+"area: config":
+  - changed-files:
+      - any-glob-to-any-file:
+          - guard_core_mcp/config.py
+          - tests/test_config.py
+
+"area: docs-tools":
+  - changed-files:
+      - any-glob-to-any-file:
+          - guard_core_mcp/docs.py
+          - tests/test_docs.py
+          - guard_core_mcp/_docs/**
+
+"area: detection":
+  - changed-files:
+      - any-glob-to-any-file:
+          - guard_core_mcp/detection.py
+          - tests/test_detection.py
+
+vendored-docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - guard_core_mcp/_docs/**
+          - scripts/sync_docs.py
+          - tests/test_sync_docs.py
+          - tests/test_sync_docs_script.py
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - tests/**
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - docs/**
+          - mkdocs.yml
+          - README.md
+          - CHANGELOG.md
+          - CONTRIBUTING.md
+          - SECURITY.md
+          - CODE_OF_CONDUCT.md
+          - LICENSE
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/**
+          - .pre-commit-config.yaml
+
+build:
+  - changed-files:
+      - any-glob-to-any-file:
+          - Makefile
+          - Dockerfile
+          - compose.yml
+          - MANIFEST.in
+          - vulture_whitelist.py
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - pyproject.toml
+          - uv.lock

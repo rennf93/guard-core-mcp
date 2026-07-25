@@ -1,0 +1,3 @@
+include guard_core_mcp/py.typed
+include LICENSE
+include README.md
