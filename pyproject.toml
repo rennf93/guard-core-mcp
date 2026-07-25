@@ -39,6 +39,10 @@ dev = [
     "fastapi-guard",
     "guard-agent",
     "guard-core",
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings",
+    "mkdocstrings-python",
     "mypy",
     "pip-audit",
     "pre-commit",
@@ -73,8 +77,10 @@ exclude = [
     "compose.yml",
     "Dockerfile",
     "Makefile",
+    "mkdocs.yml",
     "vulture_whitelist.py",
     "tests/",
+    "docs/",
 ]
 
 [tool.ruff]
@@ -184,7 +190,7 @@ exclude = ["tests/*", ".venv/*", "vulture_whitelist.py", "guard_core_mcp/_docs/*
 ignore = []
 
 [tool.deptry]
-exclude = ["tests", ".venv", "vulture_whitelist.py", "guard_core_mcp/_docs"]
+exclude = ["tests", ".venv", "vulture_whitelist.py", "guard_core_mcp/_docs", "docs"]
 extend_exclude = ["conftest.py"]
 known_first_party = ["guard_core_mcp"]
 per_rule_ignores = { "DEP002" = [
@@ -193,6 +199,10 @@ per_rule_ignores = { "DEP002" = [
     "fastapi-guard",
     "guard-agent",
     "guard-core",
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings",
+    "mkdocstrings-python",
     "mypy",
     "pip-audit",
     "pre-commit",
