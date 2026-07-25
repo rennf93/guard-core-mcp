@@ -124,10 +124,16 @@ async def check_payload(
 ) -> dict[str, Any]:
     """Run a request through guard-core's real detection engine.
 
-    Answers whether a given request would be blocked and which pattern matched,
-    which is the reliable way to explain a false positive or confirm that an attack
-    payload is actually caught. config accepts SecurityConfig fields to test how a
-    setting changes the verdict.
+    Reports whether the penetration-detection stage flags this request and which
+    pattern matched, which is the reliable way to explain a false positive or confirm
+    that an attack payload is actually caught. config accepts SecurityConfig fields to
+    test how a setting changes the verdict.
+
+    This is the detection stage alone, not the whole middleware pipeline. A real request
+    also passes IP rules, rate limiting, user-agent and cloud-provider checks, any of
+    which can block it before detection runs — and a whitelisted IP skips detection
+    entirely. So a clean verdict here does not promise the request reaches the route,
+    and a threat verdict does not promise the running app would have blocked it.
 
     body takes either a raw string or a JSON object or array, which is serialized
     for you — pass the request body in whatever shape you already have it.

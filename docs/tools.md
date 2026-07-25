@@ -341,6 +341,15 @@ sample, not a promise. `headers` is matched case-insensitively, the same way gua
 `{"error": "invalid config", "errors": [...]}`, with each entry in the same `field`/`message`/
 `input` shape `validate_config` reports for the identical failure.
 
+!!! warning "This is the detection stage, not the whole pipeline"
+    `check_payload` runs `detect_penetration_attempt` and nothing else. A real request
+    also passes IP rules, rate limiting, user-agent, cloud-provider and route checks, any
+    of which can block it before detection ever runs. In particular, guard-core skips
+    detection entirely for a whitelisted IP — `suspicious_activity.check()` returns early
+    when `request.state.is_whitelisted` is set — so an app with a `whitelist` configured
+    will happily serve a payload this tool reports as a threat. Read a clean verdict as
+    "the detection engine does not flag this", not "the request reaches your route".
+
 **Example call — a SQL injection payload**:
 
 ```python
