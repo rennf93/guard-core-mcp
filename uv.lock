@@ -1166,7 +1166,7 @@ wheels = [
 
 [[package]]
 name = "guard-core-mcp"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "mcp" },
@@ -1206,7 +1206,7 @@ requires-dist = [
     { name = "fastapi-guard", marker = "extra == 'dev'" },
     { name = "guard-agent", marker = "extra == 'dev'" },
     { name = "guard-core", marker = "extra == 'dev'" },
-    { name = "mcp", specifier = ">=2" },
+    { name = "mcp" },
     { name = "mkdocs", marker = "extra == 'dev'" },
     { name = "mkdocs-material", marker = "extra == 'dev'" },
     { name = "mkdocstrings", marker = "extra == 'dev'" },
