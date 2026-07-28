@@ -48,7 +48,7 @@ versions()
 
 ```json
 {
-  "guard_core_mcp": "0.1.0",
+  "guard_core_mcp": "0.1.1",
   "installed": {
     "guard-core": "3.5.0",
     "fastapi-guard": "7.3.0",
