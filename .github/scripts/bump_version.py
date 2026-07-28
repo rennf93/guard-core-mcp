@@ -79,6 +79,24 @@ def update_pyproject_toml(version: str) -> bool:
     return True
 
 
+def update_package_init(version: str) -> bool:
+    """Update __version__ in guard_core_mcp/__init__.py."""
+    path = PROJECT_ROOT / "guard_core_mcp" / "__init__.py"
+    content = path.read_text()
+    pattern = re.compile(r'^(__version__\s*=\s*)"[^"]*"', re.MULTILINE)
+    match = pattern.search(content)
+    if not match:
+        print("  ERROR: Could not find __version__ in guard_core_mcp/__init__.py")
+        return False
+    current = re.search(r'"([^"]*)"', match.group(0))
+    if current and current.group(1) == version:
+        print(f"  guard_core_mcp/__init__.py: already set to {version}")
+        return True
+    path.write_text(pattern.sub(f'{match.group(1)}"{version}"', content))
+    print(f"  guard_core_mcp/__init__.py: updated to {version}")
+    return True
+
+
 def update_mike_yml(version: str) -> bool:
     """Update .mike.yml with new version entry and latest alias."""
     path = PROJECT_ROOT / ".mike.yml"
@@ -289,6 +307,7 @@ def main() -> int:
 
     updaters: list[tuple[str, Callable[[str], bool]]] = [
         ("pyproject.toml", update_pyproject_toml),
+        ("guard_core_mcp/__init__.py", update_package_init),
         (".mike.yml", update_mike_yml),
         ("docs/versions/versions.json", update_versions_json),
         ("docs/index.md", update_index_md),

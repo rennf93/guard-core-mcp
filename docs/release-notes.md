@@ -10,6 +10,17 @@ Release Notes
 
 ___
 
+v0.1.1 (2026-07-28)
+-------------------
+
+MCP SDK 2.0 compatibility (v0.1.1)
+--------------------------------------------------------
+
+- **Fixed** — The server failed to start against `mcp` 2.0.0 with `ModuleNotFoundError: No module named 'mcp.server.fastmcp'`. The SDK renamed `FastMCP` to `MCPServer` and moved it to `mcp.server.mcpserver`; `guard-core-mcp` now imports it from there.
+- **Changed** — `mcp` is now required at `>=2`, since the pre-2.0 import path no longer exists.
+
+___
+
 v0.1.0 (2026-07-25)
 -------------------
 
