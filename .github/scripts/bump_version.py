@@ -3,6 +3,7 @@ Version bump helper script for guard-core-mcp.
 
 Updates the version string across all files that reference it:
 - pyproject.toml
+- guard_core_mcp/__init__.py
 - .mike.yml
 - docs/versions/versions.json
 - docs/index.md
