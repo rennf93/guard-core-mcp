@@ -1,7 +1,7 @@
 import importlib.metadata
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from guard_core_mcp import __version__
 from guard_core_mcp import config as config_module
@@ -10,7 +10,7 @@ from guard_core_mcp import docs as docs_module
 
 GUARD_DISTRIBUTIONS = ("guard-core", "fastapi-guard", "guard-agent")
 
-mcp = FastMCP("guard-core")
+mcp = MCPServer("guard-core")
 
 
 def installed_guard_versions() -> dict[str, str | None]:
