@@ -3,6 +3,16 @@ Release Notes
 
 ___
 
+v0.1.2 (2026-07-28)
+-------------------
+
+Unpinned mcp (v0.1.2)
+--------------------------------------------------------
+
+- **Changed** — `mcp` is declared without a version bound again, matching how every other dependency in the Guard ecosystem is declared. Installs resolve the latest SDK, which is what the server targets.
+
+___
+
 v0.1.1 (2026-07-28)
 -------------------
 
