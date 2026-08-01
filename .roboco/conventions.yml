@@ -1,0 +1,40 @@
+# Architectural conventions for this project.
+# Auto-scaffolded by RoboCo — edit freely; this file is canonical.
+# Each module lists definition KINDS forbidden in it; rules toggle
+# warn/block; waivers are accountable, PR-reviewed escape hatches.
+version: 1
+languages:
+- python
+modules:
+- path: guard_core_mcp/_docs/fastapi-guard/api
+  purpose: HTTP routes / endpoint definitions
+  forbidden:
+  - model
+  - helper
+- path: guard_core_mcp/_docs/guard-agent/api
+  purpose: HTTP routes / endpoint definitions
+  forbidden:
+  - model
+  - helper
+- path: guard_core_mcp/_docs/guard-core/api
+  purpose: HTTP routes / endpoint definitions
+  forbidden:
+  - model
+  - helper
+rules:
+  god_class:
+    level: warn
+  thin_routes:
+    level: block
+  modular_cohesion:
+    level: block
+  no_models_in_api:
+    level: block
+  no_helpers_in_api:
+    level: warn
+  no_inline_comments:
+    level: warn
+  no_lint_suppressions:
+    level: block
+custom: []
+waivers: []
