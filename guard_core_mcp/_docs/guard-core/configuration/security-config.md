@@ -21,6 +21,7 @@ Core Settings
 | `enforce_https`           | `bool`                      | `False`  | Redirect HTTP requests to HTTPS globally.              |
 | `custom_request_check`    | `Callable \| None`          | `None`   | Global async function for custom request validation.   |
 | `custom_response_modifier`| `Callable \| None`          | `None`   | Global async function to modify responses.             |
+| `route_resolution_strict` | `bool`                      | `False`  | Block with `500` when the adapter reports it could not resolve the route, instead of running the pipeline with no per-route config. Also turns requests to paths the app does not serve into `500`s rather than `404`s. See [Reporting a Failed Match](../adapters/decorators.md#reporting-a-failed-match). |
 
 **Default `exclude_paths`**: `["/docs", "/redoc", "/openapi.json", "/openapi.yaml", "/favicon.ico", "/static"]`
 
@@ -43,6 +44,9 @@ Proxy Configuration
 - `trusted_proxies`: Each entry is validated as a valid IP address or CIDR range.
 - `trusted_proxy_depth`: Must be >= 1.
 
+!!! warning "Your app server must not pre-resolve the client itself"
+    Leaving `trusted_proxies` unset only means "`X-Forwarded-For` is never trusted" if your ASGI/WSGI server isn't already applying that header before guard-core runs. uvicorn's default `proxy_headers=True` (and equivalent settings in Gunicorn/Hypercorn) does exactly that. See [Deployment Prerequisite](../internals/ip-management.md#deployment-prerequisite-disable-the-app-servers-own-forwarded-header-handling) for the fix.
+
 ___
 
 IP Management
@@ -52,7 +56,7 @@ IP Management
 |----------------------|-------------------|-------------------|------------------------------------------------|
 | `whitelist`          | `list[str] \| None` | `None`          | Allowed IPs/CIDRs. `None` disables (allow all).|
 | `blacklist`          | `list[str]`       | `[]`              | Blocked IPs/CIDRs.                             |
-| `whitelist_countries`| `list[str]`       | `[]`              | Country codes always allowed.                  |
+| `whitelist_countries`| `list[str]`       | `[]`              | Allowed countries. Non-empty = only listed pass (unknown blocked). Overrides `blocked_countries`. |
 | `blocked_countries`  | `list[str]`       | `[]`              | Country codes always blocked.                  |
 | `blocked_user_agents`| `list[str]`       | `[]`              | Regex patterns for blocked user agents.        |
 | `enable_ip_banning`  | `bool`            | `True`            | Enable automatic IP banning.                   |
@@ -181,7 +185,7 @@ These fields tune cold-start and horizontal-scale behaviour for the geo-IP and c
 
 When to use:
 
-- `lazy_init=True` to keep startup non-blocking when IPInfo MMDB or cloud-IP provider fetches are slow. The background warmup runs concurrently with normal request handling; cloud-provider blocking and geo checks become active once the background task finishes. Rate limiting, IP banning, pattern detection, and other layers remain fully active throughout the warmup window. Pair with a Kubernetes/ALB warmup probe if your deployment cannot tolerate any inert window.
+- `lazy_init=True` to keep startup non-blocking when IPInfo MMDB or cloud-IP provider fetches are slow. The background warmup runs concurrently with normal request handling; cloud-provider blocking and geo checks become active once the background task finishes. Rate limiting, IP banning, pattern detection, and other layers remain fully active throughout the warmup window. `lazy_init` only takes effect when Redis is enabled and the adapter calls `initialize_redis_handlers()` from its own startup hook (for example fastapi-guard's lifespan integration) — see [Provider Status](#provider-status) below for the accessor that lets a Kubernetes/ALB warmup probe (or any health endpoint) tell when that window has closed.
 - `geo_ip_db_max_age` to tighten or loosen the IPInfo refresh cadence — match it to your IPInfo plan's update frequency.
 - `cloud_ip_store` to point multiple horizontally-scaled instances at a single pre-populated Redis namespace, skipping per-instance cloud-IP cold starts.
 
@@ -198,6 +202,45 @@ config = SecurityConfig(
 shared_store = RedisCloudIpStore(RedisManager(config))
 config_with_shared_store = SecurityConfig(cloud_ip_store=shared_store)
 ```
+
+### Provider Status
+
+`cloud_handler.get_status()` (the module-level singleton) and your `IPInfoManager` instance's `get_status()` report per-provider readiness, the last successful refresh timestamp, and a cheap entry count. `HandlerInitializer` is adapter-internal — its `get_initialization_status()` combines both into one payload, and adapters expose that combined payload as their status surface (fastapi-guard: `SecurityMiddleware.get_initialization_status()`, or `add_status_route(app)` → `GET /_guard/status`).
+
+Cloud-only status, callable anywhere:
+
+```python
+from guard_core.handlers.cloud_handler import cloud_handler
+
+cloud_status = cloud_handler.get_status()
+# {
+#     "AWS": {"ready": True, "last_refreshed": datetime(...), "entries": 3421},
+#     "GCP": {"ready": False, "last_refreshed": None, "entries": 0},
+#     ...
+# }
+```
+
+Geo-IP status — call `get_status()` on the `IPInfoManager` instance you passed in as `geo_ip_handler` (there is no module singleton: the manager is token-gated, so it is instantiated per app, not at import time):
+
+```python
+geo_status = ip_info_manager.get_status()
+# {"ready": True, "last_refreshed": datetime(...), "entries": 494}
+```
+
+Combined cloud + geo-IP payload, for a warmup probe or health endpoint — read it through your adapter rather than reconstructing `HandlerInitializer` yourself (fastapi-guard):
+
+```python
+from guard.status import add_status_route
+
+add_status_route(app, path="/_guard/status")  # GET /_guard/status -> combined payload
+# or, in-process: security_middleware.get_initialization_status()
+# {
+#     "cloud_providers": { ...as above... },
+#     "geo_ip": { ...as above... },
+# }
+```
+
+`geo_ip` is `None` when no `geo_ip_handler` is configured. A custom `geo_ip_handler` that does not implement `get_status()` still reports `ready` (from the required `is_initialized` property) with `last_refreshed`/`entries` as placeholders. This is synchronous, dependency-free, and cheap enough to poll from a warmup probe or health endpoint — it is exactly what to wire up for the "cannot tolerate any inert window" case above.
 
 See [Cloud IP Store](../api/cloud-ip-store.md) for the protocol contract and the Redis namespace migration note.
 
@@ -307,7 +350,7 @@ Detection Engine
 | `detection_max_content_length`      | `int`   | `10000` | 1000 - 100000 | Maximum content length for detection.        |
 | `detection_preserve_attack_patterns`| `bool`  | `True`  | N/A           | Preserve attack patterns during truncation.  |
 | `detection_semantic_threshold`      | `float` | `0.7`   | 0.0 - 1.0    | Threshold for semantic attack detection.     |
-| `detection_anomaly_threshold`       | `float` | `3.0`   | 1.0 - 10.0   | Std deviations for anomaly detection.        |
+| `detection_anomaly_threshold`       | `float` | `3.0`   | 1.0 - 10.0   | Std deviations slower than average to flag an anomaly (never faster). |
 | `detection_slow_pattern_threshold`  | `float` | `0.1`   | 0.01 - 1.0   | Seconds to consider a pattern slow.          |
 | `detection_monitor_history_size`    | `int`   | `1000`  | 100 - 10000   | Recent metrics to keep in history.           |
 | `detection_max_tracked_patterns`    | `int`   | `1000`  | 100 - 5000    | Maximum patterns to track for performance.   |
