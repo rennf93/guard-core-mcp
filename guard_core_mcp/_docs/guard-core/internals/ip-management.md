@@ -140,11 +140,26 @@ async def _check_whitelist(ip_addr, ip, config) -> bool:
 
 ### Country Check
 
-Uses the `GeoIPHandler` protocol to resolve the country code for an IP, then checks it against `config.blocked_countries` and `config.whitelist_countries`.
+Uses the `GeoIPHandler` protocol to resolve the country code for an IP, then checks it against `config.blocked_countries` and `config.whitelist_countries`. If the country cannot be resolved (reader uninitialized, lookup failure, or unrecognized IP), `check_ip_country` returns `False` — not blocked — the same as when no country rules are configured; this is deliberate fail-open behaviour and is covered by a dedicated regression test.
 
 ### Cloud Provider Check
 
-Delegates to `CloudManager.is_cloud_ip()` to check if the IP belongs to a blocked cloud provider.
+Delegates to `CloudManager.is_cloud_ip()` to check if the IP belongs to a blocked cloud provider. Before the provider's ranges are populated, `is_cloud_ip()` fails open the same way — `False`, not blocked — and logs a rate-limited `WARNING` so the window is visible instead of silent; see [Provider Status](../configuration/security-config.md#provider-status).
+
+### Provider Status
+
+The `IPInfoManager` instance's `get_status()` reports the same three fields as [`cloud_handler.get_status()`](cloud-providers.md#provider-status) — `ready`, `last_refreshed`, `entries` — so a caller polling both subsystems gets a uniform shape:
+
+```python
+def get_status(self) -> dict[str, Any]:
+    return {
+        "ready": self.is_initialized,
+        "last_refreshed": self.last_refreshed,
+        "entries": self.entry_count,
+    }
+```
+
+`entries` is `reader.metadata().node_count` — a cheap, already-in-memory count of nodes in the loaded MMDB search tree — and `0` while `reader` is `None`. `last_refreshed` is set on every successful `initialize()`/`refresh()` and stays at its last value if a later refresh fails, so `ready=False` with a non-`None` `last_refreshed` means "this used to work." Your adapter's status surface combines this with `cloud_handler.get_status()` into one payload (fastapi-guard: `SecurityMiddleware.get_initialization_status()` or `GET /_guard/status`) — see [Provider Status](../configuration/security-config.md#provider-status).
 
 ___
 
@@ -184,6 +199,24 @@ def _is_trusted_proxy(connecting_ip, trusted_proxies) -> bool:
 ### Spoofing Detection
 
 When an `X-Forwarded-For` header is received from an untrusted source, guard-core logs a warning and fires an agent event with `event_type="suspicious_request"` and `action_taken="spoofing_detected"`. The request is still processed using the connecting IP.
+
+### Deployment Prerequisite: Disable the App Server's Own Forwarded-Header Handling
+
+`request.client_host` is whatever the ASGI/WSGI server puts in `scope["client"]` (or its WSGI equivalent) by the time it reaches the adapter — guard-core never sees the raw TCP peer. Several app servers rewrite that value themselves from `X-Forwarded-For` before any application code, including guard-core, runs. uvicorn is the clearest example: `proxy_headers=True` and `forwarded_allow_ips="127.0.0.1"` are its defaults, so a reverse proxy connecting from loopback (the common case for a same-host `proxy_pass`) has its `X-Forwarded-For` applied to `scope["client"]` upstream of guard-core. Gunicorn, Hypercorn, and other WSGI/ASGI servers have equivalent forwarded-header options; the same reasoning applies to whichever one is in front of your app.
+
+When that happens, `connecting_ip` in `extract_client_ip` is no longer the connecting peer — it is already the value the header carried. Two things follow:
+
+- With `trusted_proxies` unset, the function returns `connecting_ip` immediately (step 4 above) believing no proxy is declared, so the header is "never trusted" — but the server already trusted it. Every value an attacker puts in `X-Forwarded-For` becomes the "connecting" IP as far as guard-core, rate limiting, and IP bans are concerned.
+- With `trusted_proxies` configured but not matching this pre-resolved peer, the untrusted-peer branch fires — logging spoofing warnings and `spoofing_detected` agent events on ordinary traffic, because the peer now equals the forwarded value it supposedly "spoofed".
+
+guard-core detects the fingerprint of this condition — the connecting IP appearing among the entries of its own `X-Forwarded-For` chain, which a real proxy never produces for the address it received the connection from — and logs one warning (not per-request) naming the fix. It cannot recover the true peer once the server has already overwritten it; this is observability only, not a repair.
+
+**Fix**: turn off the server's own forwarded-header handling and let guard-core be the single authority via `trusted_proxies` / `trusted_proxy_depth`:
+
+- uvicorn: pass `--no-proxy-headers` on the CLI, or `proxy_headers=False` to `uvicorn.run(...)`.
+- Gunicorn, Hypercorn, and other WSGI/ASGI servers: disable their equivalent forwarded-header/proxy-trust setting the same way.
+
+With the server's own handling off, its access log will show the proxy's address rather than the original client — that is expected, since `X-Forwarded-For` is no longer applied before the request reaches your application.
 
 ___
 
