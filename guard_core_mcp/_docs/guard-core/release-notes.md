@@ -10,6 +10,90 @@ Release Notes
 
 ___
 
+v3.8.1 (2026-08-03)
+-------------------
+
+Stop the inert-lazy_init warning, complete the preempted-header warning's advice, and make global whitelist_countries actually restrict (v3.8.1)
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Fixed
+
+- `HandlerInitializer`'s "lazy_init has no effect without Redis" warning, introduced in v3.8.0, fired whenever Redis was disabled and a cloud-IP or geo-IP path existed — regardless of whether `lazy_init` was actually enabled. Because `SecurityConfig.lazy_init` defaults to `True`, a user who never opted into lazy init and never uses Redis still saw the warning on every startup. The check now returns early unless `lazy_init` is actually `True`, so it only warns the user who genuinely asked for lazy init and won't get it.
+- The preempted-forwarded-header warning introduced in v3.7.1 told users to disable the app server's forwarded-header handling (`uvicorn --no-proxy-headers`, `proxy_headers=False`) and declare `trusted_proxies`, but omitted `trust_x_forwarded_proto`. A user who followed the first step alone — the obvious reading — broke HTTPS detection on a TLS-terminating host (Render, Heroku, a CDN): with `proxy_headers` off the server stops forwarding the URL scheme, and `https_enforcement` only honours `X-Forwarded-Proto` when `trusted_proxies` is populated and `trust_x_forwarded_proto=True`, so under `enforce_https=True` it saw plain HTTP and redirect-looped. The warning now names all three settings and calls out the redirect-loop risk.
+- `whitelist_countries` at the global `SecurityConfig` level was exemption-only: a country in neither `whitelist_countries` nor `blocked_countries` was allowed, and with no `blocked_countries` set it was a complete no-op. This contradicted the field's documented meaning, the route-level `allow_countries` decorator (which already restricted), and the sibling IP `whitelist` field (which already restricted). The global country check now treats a non-empty `whitelist_countries` as a true allow-list: only listed countries pass, an unresolved country is blocked (fail-closed, matching `allow_countries`), and an explicit match overrides `blocked_countries`.
+
+### Behaviour changes
+
+- The inert-lazy_init warning now fires only when `lazy_init=True`; with the default or `lazy_init=False` it is silent.
+- Only the preempted-forwarded-header warning's message text changed; `extract_client_ip` returns the same value in every case and the warning still fires at most once per process.
+- A non-empty `whitelist_countries` now restricts traffic to the listed countries. Previously it only exempted listed countries from `blocked_countries` and otherwise allowed everything, so a user who set `whitelist_countries=["US","CA"]` expecting "only US/CA" got default-allow. Non-listed countries are now blocked; users who combined `whitelist_countries` with `blocked_countries` expecting exemption-only semantics will see non-listed countries blocked too. This aligns the field with its name and docs.
+
+___
+
+v3.8.0 (2026-07-31)
+-------------------
+
+Stop the anomaly telemetry burst and two recon false positives (v3.8.0)
+-------------------------------------------------------------------------
+
+### Added
+
+- `CloudManager.is_cloud_ip()` now logs a rate-limited `WARNING` (at most once every 300 seconds per provider) the first time it evaluates a provider whose IP ranges are not yet populated — previously this failed open in total silence, with no signal that the check was a no-op. The return value is unchanged in every case.
+- `cloud_handler.get_status()` and the `IPInfoManager` instance's `get_status()` report per-subsystem `ready` / `last_refreshed` / `entries`; `IPInfoManager` gains `last_refreshed` and `entry_count` (`reader.metadata().node_count`) for parity with `CloudManager`'s existing `last_updated` / `ip_ranges` introspection. Adapters expose both combined via their status surface (fastapi-guard: `SecurityMiddleware.get_initialization_status()` / `GET /_guard/status`), cheap enough to back a Kubernetes/ALB warmup probe or health endpoint. See [Provider Status](configuration/security-config.md#provider-status).
+- `HandlerInitializer` now warns when `lazy_init` is configured but has no effect (Redis disabled, so its only consulted branch is unreachable) and when `SecurityConfig.geo_ip_handler` is set without `blocked_countries` / `whitelist_countries` (constructed but never initialized). Both are warnings only; neither raises or changes behaviour.
+- `IPInfoManager.get_country()`'s uninitialized-reader warning now distinguishes a startup race (never yet attempted) from a permanently failed initialization (already attempted and failed), so the log line reads differently for "still warming up" versus "check the token and network."
+
+### Fixed
+
+- `PerformanceMonitor._detect_statistical_anomaly` compared `abs(z_score)` against `anomaly_threshold`, so a pattern running faster than its own rolling average tripped `statistical_anomaly` exactly as often as one running slower. A regex finishing early is not an anomaly; only `z_score > anomaly_threshold` (slower than average) is checked now.
+- Anomaly-event emission had no rate limiting: `_check_anomalies` sent a `pattern_anomaly_*` event to the agent handler for every tripping metric, so a single host-wide stall (GC pause, cron job, backup, noisy-neighbour CPU contention) that inflated every tracked pattern's execution time at once produced one event per pattern, all sharing a timestamp. A production customer reported thousands of `pattern_anomaly_statistical_anomaly` events from a single incident, which also consumed their metered event quota. `PerformanceMonitor` now takes a new `anomaly_emission_cooldown` constructor parameter (default `60.0` seconds, clamped `1.0`-`3600.0`) tracked per pattern on `PatternStats`; once a pattern emits an anomaly event it will not emit another until the cooldown elapses, while a pattern that is genuinely and continuously slow still reports, just at most once per window. The cooldown state lives inside the same `PatternStats` entry that `max_tracked_patterns` already evicts, so it cannot accumulate unbounded memory. Callbacks registered via `register_anomaly_callback` are unaffected by the cooldown and still run on every trip — they execute in-process at no quota cost, and applications may depend on per-execution granularity (for example, a local circuit breaker).
+- The builtin `recon` regex flagged requests for `robots.txt`, `sitemap.xml`, and `security.txt` as reconnaissance. All three are standards-defined files meant to be fetched publicly — `robots.txt` is RFC 9309, `sitemap.xml` is the sitemaps.org protocol and is deliberately submitted to search engines, `security.txt` is RFC 9116 and exists specifically so security researchers can find it — and every crawler, browser, link-preview fetcher, and mobile app requests them as routine behaviour. A production customer had their own phone flagged as a high-severity threat for fetching `/robots.txt` from their own site. The three entries are removed from the alternation; `readme.txt`, `README.md`, `CHANGELOG`, `pom.xml`, `build.gradle`, `appsettings.json`, and `crossdomain.xml` remain, since those are genuine information-disclosure signals rather than standards-defined public files.
+
+### Behaviour changes
+
+- Requests for `/robots.txt`, `/sitemap.xml`, and `/security.txt` no longer match the `recon` category; the other entries in that pattern are unaffected. Only slower-than-average pattern executions can trip `statistical_anomaly` — faster ones, previously flagged too, no longer are. `pattern_anomaly_*` events sent to the agent handler are now rate-limited to at most one per pattern per `anomaly_emission_cooldown` window (default 60s); this does not change `anomaly_callbacks` behaviour, `timeout`/`slow_execution` detection, or the `get_problematic_patterns`/`get_slow_patterns` diagnostics.
+- None from the observability additions above: `is_cloud_ip()` and `check_ip_country()` return exactly what they returned before in every case (locked in by new regression tests); the new warnings and `get_status()` / `get_initialization_status()` accessors are additive and read-only.
+
+___
+
+v3.7.1 (2026-07-30)
+-------------------
+
+Detect when the app server has already resolved the client from X-Forwarded-For (v3.7.1)
+-----------------------------------------------------------------------------------------
+
+### Added
+
+- A one-time warning when the connecting IP appears inside its own `X-Forwarded-For` chain. ASGI/WSGI servers apply forwarded headers before any middleware runs — uvicorn defaults to `proxy_headers=True` with `forwarded_allow_ips="127.0.0.1"`, and a same-host reverse proxy always connects from loopback — so `request.client_host`, which `extract_client_ip` uses for the entire `trusted_proxies` decision, may already have been rewritten from the header. A genuine proxy appends the address it received the connection from and never lists its own, so the connecting IP turning up among the header's entries means something upstream resolved it first. Two consequences this surfaces: with `trusted_proxies` unset — documented as "no declared proxy, so `X-Forwarded-For` is never trusted" — the returned address is whatever the client claimed, so a rotating header defeats rate limiting and IP banning entirely; and once the server has pre-resolved the peer it no longer matches a declared proxy, so legitimate traffic trips the spoofing branch and emits `spoofing_detected` on every request. Verified end to end with `trusted_proxies` unset at `rate_limit=3/60s`, one caller rotating `X-Forwarded-For`: 12 of 12 requests were served under uvicorn's default, versus 3 served and 9 rate-limited with `--no-proxy-headers`. The remediation is to disable the server's own handling (`uvicorn --no-proxy-headers`, or `proxy_headers=False` in `uvicorn.run`; gunicorn, hypercorn and WSGI servers have equivalent settings) and declare the proxy through `trusted_proxies` / `trusted_proxy_depth` so guard-core is the single authority. Same bug class as [GHSA-77q8-qmj7-x7pp](https://github.com/rennf93/fastapi-guard/security/advisories/GHSA-77q8-qmj7-x7pp) / CVE-2025-46814, one layer further out.
+- Deployment guidance in `docs/internals/ip-management.md` and a cross-reference in `docs/configuration/security-config.md`. Neither guard-core nor its adapters previously mentioned the app server's forwarded-header handling anywhere.
+
+### Behaviour changes
+
+- None. This release is observability only: `extract_client_ip` returns exactly what it returned before in every case, the existing spoof warning and `spoofing_detected` event are unchanged, and the new warning is emitted at most once per process. The true socket peer cannot be recovered once the server has overwritten it, so guard-core reports the condition rather than pretending to repair it.
+
+___
+
+v3.7.0 (2026-07-29)
+-------------------
+
+Opt-in enforcement when an adapter cannot resolve the route (v3.7.0)
+--------------------------------------------------------------------
+
+### Added
+
+- `SecurityConfig.route_resolution_strict` (default `False`). A missing `RouteConfig` has always meant two different things — the route carries no decorators, or the adapter failed to match the request to its route — and every per-route check treats both as "nothing to enforce". The first is correct and unchanged; the second silently disables the checks the route does declare, which is how [GHSA-f2vm-w8gq-h378](https://github.com/rennf93/fastapi-guard/security/advisories/GHSA-f2vm-w8gq-h378) turned a route-matching bug in the Starlette adapter into an unauthenticated bypass of `@require_auth`. Adapters now report a failed match by setting `request.state.guard_route_unresolved = True`, and with `route_resolution_strict=True` those requests are logged, emit the new `route_unresolved` event, and are blocked with `500` (or logged only under `passive_mode`). See `docs/adapters/decorators.md`.
+- `EVENT_ROUTE_UNRESOLVED` (`route_unresolved`) event type.
+
+### Fixed
+
+- Behavioural rules were inert on any adapter that wires its decorator per request. `BehavioralProcessor._behavior_tracker()` read the decorator only from `BehavioralContext`, which adapters snapshot when they construct the middleware — before the application attaches its `SecurityDecorator` — and rebuild only when an agent, OpenTelemetry, Logfire or enrichment is enabled. On a plain decorator-only setup the tracker resolved to `None` on every request, so `usage_monitor`, `return_monitor` and `global_behavior_rules` counted nothing and never banned, throttled or alerted. It now falls back to `request.state.guard_decorator`, the same per-request source `RouteConfigResolver` already uses. Verified end to end: `usage_monitor(max_calls=2, action="ban")` previously served six requests with `200`, and now bans after the threshold. Existing tests missed this because they construct the processor directly with a tracker already attached.
+
+### Behaviour changes
+
+- None by default. `route_resolution_strict` defaults to `False` because guard-core cannot tell a failed match from a request the app simply does not route, so enforcing on every unresolved request would reject those too — with it on, a request to a path the app does not serve returns `500` rather than `404`. Enable it where every reachable path is a known route. Adapters that never set `guard_route_unresolved` are unaffected under either setting.
+
+___
+
 v3.6.0 (2026-07-28)
 -------------------
 
@@ -301,7 +385,7 @@ lazy_init: background warmup instead of first-request stall
 
 - `lazy_init=False` (the default) is unchanged — eager init at startup.
 - Users who opted into `lazy_init=True` in 2.0.0 see only an upside: the first-request latency that 2.0.0 imposed is replaced with a brief startup-time warmup window where cloud/geo layers are inert. No code changes required.
-- `lazy_init=True` users with strict cloud-provider blocking who can't tolerate any warmup window should stay on `lazy_init=False` (or continue using `lazy_init=True` with a Kubernetes/ALB warmup probe that hits a health endpoint before real traffic).
+- `lazy_init=True` users with strict cloud-provider blocking who can't tolerate any warmup window should stay on `lazy_init=False` (or continue using `lazy_init=True` with a Kubernetes/ALB warmup probe that hits a health endpoint before real traffic). As of v3.8.0, your adapter's status surface (fastapi-guard: `GET /_guard/status` or `SecurityMiddleware.get_initialization_status()`) is what that health endpoint should read — see [Provider Status](configuration/security-config.md#provider-status).
 
 ___
 
