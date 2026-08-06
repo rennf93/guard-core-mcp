@@ -31,6 +31,11 @@ on:
       - 'pyproject.toml'
       - 'scripts/**'
       - 'tests/**'
+  schedule:
+    # NOTE: Mondays @ 10 AM UTC. docs-drift compares the vendored _docs
+    # against upstream repos that release independently of this one, so it
+    # must run on a timer, not only when this repo changes.
+    - cron: '0 10 * * 1'
   workflow_dispatch:
 
 jobs:
