@@ -39,7 +39,7 @@ config = SecurityConfig(
     geo_ip_handler=IPInfoManager("your_token_here"),
     enable_redis=False,
     rate_limit=100,
-    auto_ban_threshold=5
+    auto_ban_threshold=5,
 )
 
 app.add_middleware(SecurityMiddleware, config=config)
@@ -75,7 +75,7 @@ You can also download the example app as a Docker container from [GitHub Contain
 docker pull ghcr.io/rennf93/fastapi-guard-example:latest
 
 # Or pull a specific version (matches library releases)
-docker pull ghcr.io/rennf93/fastapi-guard-example:v7.5.0
+docker pull ghcr.io/rennf93/fastapi-guard-example:v7.5.1
 ```
 
 ___
@@ -178,7 +178,6 @@ config = SecurityConfig(
     rate_limit=100,
     auto_ban_threshold=5,
     enable_penetration_detection=True,
-
     # Telemetry — that's it
     enable_agent=True,
     agent_api_key="YOUR_API_KEY",

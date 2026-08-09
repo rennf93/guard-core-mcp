@@ -33,21 +33,21 @@ versions()
 
 ```json
 {
-  "guard_core_mcp": "0.1.4",
+  "guard_core_mcp": "0.1.5",
   "installed": {
-    "guard-core": "3.8.1",
-    "fastapi-guard": "7.4.0",
-    "guard-agent": "2.7.1"
+    "guard-core": "3.11.0",
+    "fastapi-guard": "7.5.1",
+    "guard-agent": "2.8.1"
   },
   "docs_bundled_for": {
-    "fastapi-guard": "7.5.0",
-    "guard-agent": "2.8.0",
-    "guard-core": "3.10.0"
+    "fastapi-guard": "7.5.1",
+    "guard-agent": "2.8.1",
+    "guard-core": "3.11.0"
   }
 }
 ```
 
-`installed` and `docs_bundled_for` differing, as they do above, is the normal case, not a fault: `installed` reflects this project's actual dependencies, `docs_bundled_for` is fixed at build time to whatever `scripts/sync_docs.py` last vendored. A `null` under `installed` is the real warning sign, a version that merely differs from `docs_bundled_for` is not. See [Installation](installation.md#verifying-the-install) for the full explanation.
+The two sides agree above because this release vendored its docs from those same versions, but they are independent and often will not: `installed` reflects this project's actual dependencies, while `docs_bundled_for` is fixed at build time to whatever `scripts/sync_docs.py` last vendored. Either side trailing the other is the normal case, not a fault. A `null` under `installed` is the real warning sign, a version that merely differs from `docs_bundled_for` is not. See [Installation](installation.md#verifying-the-install) for the full explanation.
 
 ___
 
@@ -77,7 +77,7 @@ validate_config({"ipinfo_token": "abc123"}, "fastapi-guard")
 {
   "valid": true,
   "package": "fastapi-guard",
-  "version": "7.4.0",
+  "version": "7.5.1",
   "model": "SecurityConfig",
   "errors": [],
   "unknown_fields": [],
@@ -102,7 +102,7 @@ validate_config({"rate_limit": 100, "enable_rate_limit": True}, "fastapi-guard")
 {
   "valid": false,
   "package": "fastapi-guard",
-  "version": "7.4.0",
+  "version": "7.5.1",
   "model": "SecurityConfig",
   "errors": [],
   "unknown_fields": [
@@ -144,7 +144,7 @@ config_fields("rate_limit", "fastapi-guard")
 ```json
 {
   "package": "fastapi-guard",
-  "version": "7.4.0",
+  "version": "7.5.1",
   "query": "rate_limit",
   "exact": {
     "name": "rate_limit",
@@ -224,7 +224,7 @@ search_docs("rate limiting", "fastapi-guard", limit=3)
       "heading": "",
       "snippet": "- **Geographic rate limit check**: Fixed geo-based rate limiting by implementing the missing `_check_geo_rate_limit` method in `RateLimitCheck`. Previously, geo rate limits configured via the `@security.geo_rate_limit` decorator were stored but never enforced. The rate limit pipeline now correctly e",
       "url": "https://rennf93.github.io/fastapi-guard/latest/release-notes/",
-      "score": 75
+      "score": 76
     },
     {
       "package": "fastapi-guard",

@@ -68,22 +68,24 @@ ___
 Verifying the install
 ----------------------
 
-Call `versions` once the server is registered. `installed` reports whatever version of each Guard library is actually resolved in this interpreter, your project's real dependencies. `docs_bundled_for` is unrelated to that: it is fixed at build time to whichever versions `scripts/sync_docs.py` last vendored into this release. The two commonly disagree, and a version mismatch between them is normal, not a sign anything is broken:
+Call `versions` once the server is registered. `installed` reports whatever version of each Guard library is actually resolved in this interpreter, your project's real dependencies. `docs_bundled_for` is unrelated to that: it is fixed at build time to whichever versions `scripts/sync_docs.py` last vendored into this release.
 
 ```json
 {
-  "guard_core_mcp": "0.1.4",
+  "guard_core_mcp": "0.1.5",
   "installed": {
-    "guard-core": "3.8.1",
-    "fastapi-guard": "7.4.0",
-    "guard-agent": "2.7.1"
+    "guard-core": "3.11.0",
+    "fastapi-guard": "7.5.1",
+    "guard-agent": "2.8.1"
   },
   "docs_bundled_for": {
-    "fastapi-guard": "7.5.0",
-    "guard-agent": "2.8.0",
-    "guard-core": "3.10.0"
+    "fastapi-guard": "7.5.1",
+    "guard-agent": "2.8.1",
+    "guard-core": "3.11.0"
   }
 }
 ```
 
-Here every `installed` version trails its `docs_bundled_for` counterpart by a release or two, an ordinary lag from whatever this particular project happens to have locked. A `null` entry under `installed`, not a version that merely differs from `docs_bundled_for`, is the actual warning sign: it means a library you meant to use is entirely absent from the interpreter running the server, not just older or newer than the bundled docs. If a version-specific answer depends on which one is right, trust `installed`, since that is the code actually running; `docs_bundled_for` only tells you which documentation snapshot the search and doc tools are reading.
+The two sides agree here because this release vendored its docs from those same versions, but they are independent and often will not. Your project pins its own Guard dependencies, so `installed` follows your lockfile while `docs_bundled_for` stays frozen at whatever was current when this release was built. Seeing `installed` trail by a release or two is an ordinary lag, not a fault.
+
+A `null` entry under `installed`, rather than a version that merely differs from `docs_bundled_for`, is the actual warning sign: it means a library you meant to use is entirely absent from the interpreter running the server, not just older or newer than the bundled docs. If a version-specific answer depends on which side is right, trust `installed`, since that is the code actually running; `docs_bundled_for` only tells you which documentation snapshot the search and doc tools are reading.
