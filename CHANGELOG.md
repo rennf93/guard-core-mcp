@@ -3,6 +3,19 @@ Release Notes
 
 ___
 
+v0.1.4 (2026-08-09)
+-------------------
+
+Sync vendored docs to guard-core 3.10.0 and fastapi-guard 7.5.0 (v0.1.4)
+---------------------------------------------------------------------------
+
+- **Changed** - Vendored `_docs` re-synced from the sibling repos: guard-core 3.10.0, fastapi-guard 7.5.0, guard-agent 2.8.0. The `search_docs` and `get_doc` tools now surface guard-core's config-derived security pipeline (`SecurityCheck.applies_to`, which lets a deployment build only the checks its configuration can actually trigger), the new `redis`, `cloud` and `geo` install extras, and the corrected `muted_check_logs` description in the telemetry architecture page.
+- **Changed** - fastapi-guard's vendored pages pick up the decorator adoption that makes per-route configuration visible when the pipeline is built, and the shared-state registry's compound `(id(config), id(guard_decorator))` key, which stops two middleware instances sharing one `SecurityConfig` from also sharing a pipeline built under different route visibility.
+- **Changed** - `uv.lock` regenerated so the recorded package version matches `pyproject.toml`. `pyproject.toml` dependencies remain unpinned.
+- No runtime code or behavior change. Runtime dependencies (`mcp`, `pydantic`) are unchanged and the server does not depend on guard-core at runtime, so this release only refreshes the embedded documentation.
+
+___
+
 v0.1.3 (2026-08-03)
 -------------------
 
