@@ -3,10 +3,7 @@
 # Documentation Site: https://rennf93.github.io/guard-core-mcp
 
 ## Overview
-Guard Core MCP is an MCP (Model Context Protocol) server that lets AI coding agents answer
-questions about the Guard security ecosystem — fastapi-guard, guard-core and guard-agent — by
-introspecting the libraries actually installed in a project, instead of answering from training
-data. This documentation site covers installation, all six tools, and release notes.
+Guard Core MCP is an MCP (Model Context Protocol) server that lets AI coding agents answer questions about the Guard security ecosystem, fastapi-guard, guard-core and guard-agent, by introspecting the libraries actually installed in a project, instead of answering from training data. This documentation site covers installation, all six tools, and release notes.
 
 ## Documentation Structure
 
@@ -16,12 +13,12 @@ data. This documentation site covers installation, all six tools, and release no
 
 ### Tools Reference
 - **All Six Tools**: https://rennf93.github.io/guard-core-mcp/latest/tools/
-  - `versions` — which Guard libraries are installed, at what version, and what the bundled docs cover
-  - `validate_config` — validate a config dict against the real `SecurityConfig`/`AgentConfig` model
-  - `config_fields` — look up a config field by exact name or fuzzy query
-  - `search_docs` — search the bundled fastapi-guard/guard-core/guard-agent documentation
-  - `get_doc` — fetch the full text of one bundled documentation page
-  - `check_payload` — run a request through guard-core's real detection engine
+  - `versions`, which Guard libraries are installed, at what version, and what the bundled docs cover
+  - `validate_config`, validate a config dict against the real `SecurityConfig`/`AgentConfig` model
+  - `config_fields`, look up a config field by exact name or fuzzy query
+  - `search_docs`, search the bundled fastapi-guard/guard-core/guard-agent documentation
+  - `get_doc`, fetch the full text of one bundled documentation page
+  - `check_payload`, run a request through guard-core's real detection engine
 
 ### Release Notes
 - **Changelog**: https://rennf93.github.io/guard-core-mcp/latest/release-notes/
@@ -34,11 +31,7 @@ data. This documentation site covers installation, all six tools, and release no
 - **guard-agent**: Telemetry and monitoring agent for the Guard security ecosystem
 
 ### Why This Server Exists
-Pydantic silently ignores unknown config keys instead of raising, so a misspelled setting does
-nothing at runtime with no error anywhere. `guard-core-mcp` answers config and detection
-questions from the packages actually installed in the interpreter running it — real Pydantic
-validation, real field metadata, and the real guard-core detection engine — rather than from an
-LLM's memory of the library, which may be stale or wrong for the installed version.
+Pydantic silently ignores unknown config keys instead of raising, so a misspelled setting does nothing at runtime with no error anywhere. `guard-core-mcp` answers config and detection questions from the packages actually installed in the interpreter running it, real Pydantic validation, real field metadata, and the real guard-core detection engine, rather than from an LLM's memory of the library, which may be stale or wrong for the installed version.
 
 ### Installation Model
 `guard-core-mcp` must run in the same environment as the Guard libraries it introspects:
@@ -48,15 +41,10 @@ uv add --dev guard-core-mcp
 claude mcp add guard-core -- uv run guard-core-mcp
 ```
 
-Running it via `uvx guard-core-mcp` is explicitly the wrong way to install this server: `uvx`
-builds an isolated environment containing only `guard-core-mcp`'s own dependencies (`mcp`,
-`pydantic`), so `validate_config`, `config_fields` and `check_payload` all degrade to a
-structured `{"error": ..., "hint": ...}` response — only `versions`, `search_docs` and `get_doc`
-still work, since the documentation ships bundled inside the wheel.
+Running it via `uvx guard-core-mcp` is explicitly the wrong way to install this server: `uvx` builds an isolated environment containing only `guard-core-mcp`'s own dependencies (`mcp`, `pydantic`), so `validate_config`, `config_fields` and `check_payload` all degrade to a structured `{"error": ..., "hint": ...}` response, only `versions`, `search_docs` and `get_doc` still work, since the documentation ships bundled inside the wheel.
 
 ### Runtime Dependencies
-Only `mcp` and `pydantic` — `fastapi-guard`, `guard-core` and `guard-agent` are never installed
-by `guard-core-mcp` itself. They must already be present in the environment it runs in.
+Only `mcp` and `pydantic`, `fastapi-guard`, `guard-core` and `guard-agent` are never installed by `guard-core-mcp` itself. They must already be present in the environment it runs in.
 
 ## Related Resources
 

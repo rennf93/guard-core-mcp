@@ -953,7 +953,7 @@ wheels = [
 
 [[package]]
 name = "fastapi-guard"
-version = "7.4.0"
+version = "7.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
@@ -961,9 +961,9 @@ dependencies = [
     { name = "starlette" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/77/bf/60c80678c8b082d525c3a67d4f611688f8989f4899bcf388df2411758e8a/fastapi_guard-7.4.0.tar.gz", hash = "sha256:ecd88353494690716b13e75cfd7d87be27b450a84c97e91521ba0d2095f31c06", size = 39540, upload-time = "2026-07-31T18:36:11.885Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/90/bc/c736988fe07b0cad1e3e6f4e52ccb2936ad962772cfe07e7a7c7caf76cc0/fastapi_guard-7.5.1.tar.gz", hash = "sha256:d9a278472094c6d87f281fbb04b0afb34c117c07c7f0501bc2f12a9126fb2fde", size = 48381, upload-time = "2026-08-09T17:17:01.251Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/59/bd/a47bd3c9a62c172c08dd80b66c0026ca983734250897acb910b67ebe07ec/fastapi_guard-7.4.0-py3-none-any.whl", hash = "sha256:dfb8f0d21411ba7a0dec6cea97877f6e831161519315ef27ce461f9d9ceaa346", size = 15658, upload-time = "2026-07-31T18:36:10.643Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/7a/22aa185c54e4a503488307a5eeed2e87d6e44520f66a3dae53c134c1aa1d/fastapi_guard-7.5.1-py3-none-any.whl", hash = "sha256:b0f30b875b4876a5b10d9555c0af3913e18455073a653d0393c3383b571d0aec", size = 25744, upload-time = "2026-08-09T17:17:00.117Z" },
 ]
 
 [[package]]
@@ -1133,7 +1133,7 @@ wheels = [
 
 [[package]]
 name = "guard-agent"
-version = "2.7.1"
+version = "2.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
@@ -1141,14 +1141,14 @@ dependencies = [
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e4/67/fb25b4580cc6eaa37f2cf650d180781b9b89ed1df4b29e7011771d71d4b3/guard_agent-2.7.1.tar.gz", hash = "sha256:7584e816c086dc22f492e0d83ac6f7247b10d819aafaf8dddbc6fcd1a5fa7cd3", size = 47159, upload-time = "2026-07-30T15:33:00.257Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/72/1f/cc982a0a53b8aaad2767546c7065258acb9e5850383a059441e589dd2bf8/guard_agent-2.8.1.tar.gz", hash = "sha256:19e116143d4f91b7e2c80f1c836080a710dd80db42336f41aefe280149e1ea75", size = 57021, upload-time = "2026-08-09T17:32:22.441Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3b/51/b467f294e1b757151d329b88232b22ee873491b5e6ea85193ee3be50911f/guard_agent-2.7.1-py3-none-any.whl", hash = "sha256:a937c40033636ed5741c7e5003b1902910ed0735d9086f5b24f3c4de57af4525", size = 34870, upload-time = "2026-07-30T15:32:59.348Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/69/509a22bf3ece02ecf59f1f8924d5cfaab898aa4bf09a02793ac75847786f/guard_agent-2.8.1-py3-none-any.whl", hash = "sha256:ebd794417bb9e760b6d98c6bb4da4c47d520d25d613be4d43596845b7fa9b76e", size = 46439, upload-time = "2026-08-09T17:32:21.39Z" },
 ]
 
 [[package]]
 name = "guard-core"
-version = "3.8.1"
+version = "3.11.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1159,14 +1159,14 @@ dependencies = [
     { name = "requests" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/62/1c/6364902e48a87a0d7adad5ec3753c32759d1ba63d3402f472b14c916ce35/guard_core-3.8.1.tar.gz", hash = "sha256:fd561cdd14e0e0b9e21367615b3e4d83d84bca2c2bb603cea2b0690b07e4e7a5", size = 206153, upload-time = "2026-08-03T17:17:10.441Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1c/59/492a7f767c436abf84fcb4ef87de079ace8d581cd406647bff549a547d6b/guard_core-3.11.0.tar.gz", hash = "sha256:88fae44e1ee0818123b19ccb72ea48bb95cd692552db5c89be6c0ffebf6f2214", size = 248562, upload-time = "2026-08-09T17:30:24.529Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/96/2ca832b1d18f3cecc07c1a453f43a624c7b9a3edf4afd6365c87f6924db4/guard_core-3.8.1-py3-none-any.whl", hash = "sha256:feddbdefeeccda77494629903fbd0a032b674bc6c9b9d1f83aed1db600a41578", size = 249364, upload-time = "2026-08-03T17:17:09.138Z" },
+    { url = "https://files.pythonhosted.org/packages/08/37/94aacf1d16b6373dea74e10bbde6f2da6f864db02e8f0c449472223c18b4/guard_core-3.11.0-py3-none-any.whl", hash = "sha256:942090b217697f6f87242e55b21572e488ef32cc9ed0efc5ea3697b923ad40ff", size = 288695, upload-time = "2026-08-09T17:30:23.258Z" },
 ]
 
 [[package]]
 name = "guard-core-mcp"
-version = "0.1.4"
+version = "0.1.5"
 source = { editable = "." }
 dependencies = [
     { name = "mcp" },
