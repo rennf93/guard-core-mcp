@@ -27,10 +27,11 @@ def installed_guard_versions() -> dict[str, str | None]:
 def versions() -> dict[str, Any]:
     """Report which Guard libraries this server can introspect, and at what version.
 
-    A null installed version means that library is absent from the interpreter running
-    this server, so any answer about it would be a guess rather than introspection.
-    Compare installed against docs_bundled_for before trusting a documentation answer
-    about a version-specific feature.
+    Also reports this server's own guard-core-mcp version. A null installed version
+    means that library is absent from the interpreter running this server, so any
+    answer about it would be a guess rather than introspection. Compare installed
+    against docs_bundled_for before trusting a documentation answer about a
+    version-specific feature.
     """
     return {
         "guard_core_mcp": __version__,
@@ -78,9 +79,10 @@ def validate_config(
 def config_fields(query: str, package: str = "fastapi-guard") -> dict[str, Any]:
     """Look up Guard config settings by name or by what they do.
 
-    An exact field name returns that field's type, default and description. Anything
-    else is matched against every field name and description, which is the fastest way
-    to answer whether a setting for some behaviour exists at all.
+    An exact field name populates the exact result with that field's type, default,
+    required-ness and description. Every query, exact or not, also populates matches
+    with every other field whose name or description contains the query, which is the
+    fastest way to answer whether a setting for some behaviour exists at all.
 
     package is one of fastapi-guard, guard-core, guard-agent.
     """
@@ -99,7 +101,10 @@ def search_docs(
     """Search the bundled Guard documentation and return citable pages.
 
     Covers fastapi-guard, guard-core and guard-agent. Omit package to search all
-    three. Each result carries the live documentation URL for that page.
+    three. Each result carries the live documentation URL for that page. Unlike
+    validate_config and config_fields, an unrecognized package is not an error here,
+    it silently matches nothing, so an empty results list can mean either a real gap
+    in the docs or a mistyped package name; if empty, try again with package omitted.
     """
     return docs_module.search_docs(query, package, limit)
 
@@ -127,16 +132,17 @@ async def check_payload(
     Reports whether the penetration-detection stage flags this request and which
     pattern matched, which is the reliable way to explain a false positive or confirm
     that an attack payload is actually caught. config accepts SecurityConfig fields to
-    test how a setting changes the verdict.
+    test how a setting changes the verdict, except enable_redis, which this tool always
+    forces to False so the sandbox never touches Redis.
 
     This is the detection stage alone, not the whole middleware pipeline. A real request
     also passes IP rules, rate limiting, user-agent and cloud-provider checks, any of
-    which can block it before detection runs — and a whitelisted IP skips detection
+    which can block it before detection runs, and a whitelisted IP skips detection
     entirely. So a clean verdict here does not promise the request reaches the route,
     and a threat verdict does not promise the running app would have blocked it.
 
-    body takes either a raw string or a JSON object or array, which is serialized
-    for you — pass the request body in whatever shape you already have it.
+    body takes either a raw string or a JSON object or array, which is serialized for
+    you, so pass the request body in whatever shape you already have it.
     """
     try:
         return await detection_module.check_payload(
