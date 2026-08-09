@@ -10,7 +10,7 @@ Release Notes
 
 ___
 
-v0.1.4 (2026-08-06)
+v0.1.4 (2026-08-09)
 -------------------
 
 Sync vendored docs to guard-core 3.10.0 and fastapi-guard 7.5.0 (v0.1.4)
