@@ -23,12 +23,19 @@ class SecurityCheckPipeline:
         self,
         checks: list[SecurityCheck],
         muted_check_logs: set[str] | None = None,
+        *,
+        config: SecurityConfig | None = None,
+        rebuild_checks: Callable[[], list[SecurityCheck]] | None = None,
     ) -> None:
         self.checks = checks
         self.muted_check_logs = muted_check_logs or set()
         self.logger = logging.getLogger(__name__)
+        self._config = config
+        self._rebuild_checks = rebuild_checks
+        self._built_revision = config.revision if config is not None else None
 
     async def execute(self, request: GuardRequest) -> GuardResponse | None:
+        self._rebuild_if_stale()
         for check in self.checks:
             try:
                 response = await check.check(request)
@@ -68,6 +75,20 @@ class SecurityCheckPipeline:
 
         return None
 ```
+
+### Config-Revision Rebuild
+
+`SecurityConfig` bumps a private, monotonically increasing revision counter on every attribute assignment (an overridden `__setattr__`; the counter itself is a Pydantic `PrivateAttr`, so it never appears in `model_fields`, `model_dump()`, equality, or the constructor). `build_default_pipeline` passes the pipeline the `SecurityConfig` it built from, a closure that reruns `applies_to` over `DEFAULT_CHECK_CLASSES`, and `factory.WATCHED_CONTAINER_FIELDS`. `execute()` calls `_rebuild_if_stale()` first, which compares the config's current revision against the revision the pipeline was last built at; if the revision moved, it rebuilds outright without looking any further. If it did not move, it computes a size signature -- `len()` on each watched container, with `None` counted as `0` and no allocation -- and compares that against the signature recorded at the last build, rebuilding only if that moved too. When neither has moved this is one integer comparison plus a handful of `len()` calls, not a config fingerprint. When either has moved, it calls the closure, reassigns `self.checks` to the freshly filtered list it returns, and records the new revision and signature, so a config mutated -- by whole-value assignment or by mutating one of the watched containers in place -- after the pipeline was built takes effect on the next request instead of staying silently stale.
+
+The watched fields are `blocked_user_agents`, `block_cloud_providers`, and `endpoint_rate_limits` -- every mutable container any `applies_to` predicate reads, and nothing else needs watching: `blocked_countries`/`whitelist_countries` are `frozenset`, every feature flag is a `bool`, and every predicate reads these three containers as `bool(...)` alone, never by content, so a predicate's answer can only change when a container crosses between empty and non-empty, which is exactly what a size signature catches. `blacklist` and `whitelist` are also mutable containers on `SecurityConfig`, but no `applies_to` reads either one -- `IpSecurityCheck` never overrides `applies_to` and is therefore always built regardless of their contents -- so they are correctly absent from the watched set. That set is not a second hardcoded list: `SecurityCheck.container_fields: ClassVar[tuple[str, ...]]` is a class attribute each check declares next to its own `applies_to` (empty by default), and `factory.WATCHED_CONTAINER_FIELDS` is the union of `container_fields` across `DEFAULT_CHECK_CLASSES`, computed once at import time. A predicate that starts reading a new mutable container is watched the moment its check class says so; nothing elsewhere has to change.
+
+The rebuild always constructs a brand-new list and swaps it into `self.checks` with a single attribute assignment rather than mutating the existing list in place, and `execute()`'s `for check in self.checks` loop captures that list reference once, at the start of the call. A request already in flight therefore keeps running against the snapshot it started with even if a concurrent request or the dynamic-rules background task bumps the revision and triggers a rebuild mid-flight.
+
+`_rebuild_if_stale()` captures the revision, the container signature, and `muted_check_logs` from `config` *before* calling the rebuild closure, then publishes all four together with the rebuilt checks under a `threading.Lock` scoped to the publish alone -- never to the closure call itself, so a rebuild storm never serializes the request path. Two callers can still both rebuild redundantly from a similarly-stale read; that costs CPU, not correctness, since whichever caller's publish lands last stamps *its own* captured revision and signature, not whatever the live config has moved to by the time its build finished. A caller that built from stale state can therefore only ever record that it built from stale state -- it can never publish a check list and then stamp it with a revision/signature that makes the pipeline believe it is current when it is not -- so the next call to `_rebuild_if_stale()` sees the mismatch and rebuilds again. Before this guarantee existed, the revision and signature were read from the live `config` *after* the rebuild closure returned rather than captured before it started; that ordering is safe in the async tree, where `_rebuild_if_stale()` contains no `await` and always completes within a single, uninterruptible coroutine turn, but it was a genuine lost-update race in the generated sync tree, whose `DynamicRuleManager` mutates the watched config fields from a real background `threading.Thread`. The steady-state comparison in `_is_stale()` never takes the lock, so the cost of a request that finds nothing stale is unchanged.
+
+A pipeline constructed directly as `SecurityCheckPipeline(checks)` -- the form every adapter and [the testing guide](../adapters/testing.md) use -- has no `config`/`rebuild_checks` reference and so never rebuilds, exactly as it did before this mechanism existed.
+
+**Residual**: `SecurityConfig`'s mutable containers are now fully covered, both by whole-value assignment and by in-place mutation. What remains open is a `RouteConfig` object mutated in place after startup: the six route-driven predicates (`authentication`, `custom_validators`, `referrer`, `request_size_content`, `required_headers`, `time_window`) read route configs that `_collect_route_configs` captures once, at decoration time, through `middleware.guard_decorator`; nothing re-derives that collection or watches it for staleness, so a route config mutated in place after the pipeline was built is not picked up by this mechanism. `enable_dynamic_rules=True` remains the supported escape hatch for the checks it covers regardless.
 
 ### Execution Semantics
 
@@ -185,18 +206,27 @@ Build-Time Elimination
 `build_default_pipeline` filters the 17-check catalogue (`DEFAULT_CHECK_CLASSES`) through each check class's `applies_to(config, route_configs)` classmethod before instantiating anything, so a deployment only builds and runs the checks its configuration can actually trigger:
 
 ```python
+def _build_checks(
+    middleware: "GuardMiddlewareProtocol",
+) -> list[SecurityCheck]:
+    config = middleware.config
+    route_configs = _collect_route_configs(middleware)
+    return [
+        cls(middleware)
+        for cls in DEFAULT_CHECK_CLASSES
+        if cls.applies_to(config, route_configs)
+    ]
+
+
 def build_default_pipeline(
     middleware: "GuardMiddlewareProtocol",
 ) -> SecurityCheckPipeline:
     config = middleware.config
-    route_configs = _collect_route_configs(middleware)
     return SecurityCheckPipeline(
-        [
-            cls(middleware)
-            for cls in DEFAULT_CHECK_CLASSES
-            if cls.applies_to(config, route_configs)
-        ],
+        _build_checks(middleware),
         muted_check_logs=config.muted_check_logs,
+        config=config,
+        rebuild_checks=lambda: _build_checks(middleware),
     )
 
 
@@ -209,7 +239,7 @@ def _collect_route_configs(
     return tuple(decorator._route_configs.values())
 ```
 
-This filtering happens once, when the pipeline is built (lazily, on the first request, after route registration completes). It does not re-run per request: a check's presence in an already-built pipeline reflects the configuration at build time, not whatever the configuration is later mutated to. Mutating `SecurityConfig` after the pipeline exists does not add or remove checks from that pipeline; only building a fresh pipeline picks up the new configuration. The supported way to change enforcement at runtime is `enable_dynamic_rules=True` (see below), not ad hoc field mutation.
+This filtering happens once, when the pipeline is built (lazily, on the first request, after route registration completes). It does not re-run on every single call to `execute()`: a check's presence in the pipeline reflects the configuration as of the last build, not necessarily the configuration at this exact instant. But it does re-run the moment `execute()` notices the config has moved since that build -- see [Config-Revision Rebuild](#config-revision-rebuild) above -- so mutating `SecurityConfig` after the pipeline exists now does add or remove checks from that pipeline, on the next request through it. `enable_dynamic_rules=True` (see below) remains the way to keep every dynamically-relevant check present regardless of what the rest of the config says; it is not the only way to get a runtime change to take effect, but the revision-triggered rebuild does not replace its narrower guarantee of "these seven checks are always here" with a broader one -- an app that relies on that guarantee for cloud/user-agent/rate-limit checks it might toggle via `DynamicRuleManager` should keep using it.
 
 ### The safety rule
 
@@ -458,6 +488,10 @@ except Exception as e:
 
 !!! tip "Choosing a failure mode"
     Keep fail-secure (the default) in production so check bugs surface as 500s rather than letting unchecked requests through. Set `fail_secure = False` to opt into fail-open behavior, intended only for staging diagnostics where availability is preferred over blocking on a check error.
+
+### Rebuild Failures
+
+`execute()` now wraps the call to `_rebuild_if_stale()` in its own `try`/`except`, ahead of and separate from the one already wrapping each check, so a raising rebuild closure -- a check constructor failing during initialization, for instance -- is routed through the same `fail_secure` decision a check exception gets, not left to propagate out of `execute()` uncaught. Under `fail_secure=True` (the default), a rebuild failure blocks the request with the same 500 `Security check failed` response a failing check produces, built through the still-valid last-known-good `self.checks[0]`'s middleware; a pipeline that has no known-good check at all to build a response through re-raises the original exception instead of silently falling open. Under `fail_secure=False`, the error is logged and the request continues against the last known-good `self.checks` -- the check list the pipeline already knew to be correct before the failed rebuild attempt, not a partially-rebuilt or truncated one, since `self.checks` is only ever reassigned after the rebuild closure returns successfully. Neither path updates the revision/signature bookkeeping on failure, so a transient rebuild failure -- a check constructor that fails once and then succeeds, for example -- is retried, and recovers, on the very next request instead of wedging the pipeline into raising (or silently degrading) forever.
 
 ___
 
