@@ -21,7 +21,8 @@ def resolve_model(package: str) -> tuple[type[BaseModel], str | None]:
             f"unknown package {package!r}; expected one of {', '.join(PACKAGE_MODELS)}"
         )
     module_name, attribute = PACKAGE_MODELS[package]
-    module = importlib.import_module(module_name)
+    # module_name is allowlist-constrained via PACKAGE_MODELS, not caller-controlled
+    module = importlib.import_module(module_name)  # nosemgrep
     model: type[BaseModel] = getattr(module, attribute)
     try:
         version: str | None = importlib.metadata.version(package)

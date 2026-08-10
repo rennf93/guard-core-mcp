@@ -3,6 +3,19 @@ Release Notes
 
 ___
 
+v0.1.6 (2026-08-10)
+-------------------
+
+Unblock make check-all under the mcp 2.x line: pin mcp>=2, isolate semgrep, bump cryptography (v0.1.6)
+------------------------------------------------------------------------------------------------------
+
+- **Fixed** - `pyproject.toml` now declares `mcp>=2` rather than `mcp` unpinned. A blanket `uv lock --upgrade` previously downgraded `mcp` from 2.0.0 to 1.23.3, which removes `mcp.server.mcpserver.MCPServer` and breaks the server at import with `ModuleNotFoundError: No module named 'mcp.server.mcpserver'`. The lower bound stops the resolver from ever selecting a 1.x release. No runtime behaviour change for any environment already on mcp 2.x.
+- **Fixed** - `make analysis` stopped working under mcp 2.x. semgrep imports `mcp.server.fastmcp` at CLI startup, a module mcp 2.0.0 removed, so `uv run semgrep` crashed with `ModuleNotFoundError: No module named 'mcp.server.fastmcp'` before scanning anything; semgrep also pins `mcp==1.23.3` in its own metadata, which cannot coexist with this server's `mcp>=2` in one virtualenv. semgrep is now invoked through `uvx --from semgrep` in an isolated environment that resolves its own mcp 1.23.3, and it has been removed from the project dev dependencies so the lock no longer carries the conflicting pin. The commented pre-commit hook was updated to the same `uvx` invocation. semgrep's one audit finding on `config.py` (`importlib.import_module` of a dynamic module name) is a false positive: `module_name` is one of three hardcoded `PACKAGE_MODELS` allowlist entries, not caller-controlled, so no arbitrary module can be loaded. It is suppressed with a `# nosemgrep` annotation and a one-line reason, so `make analysis` now prints no findings.
+- **Security** - `cryptography` bumped from 49.0.0 to 50.0.0 to clear PYSEC-2026-3552, which pip-audit flagged and which failed `make security`. The upgrade is targeted (`uv lock --upgrade-package cryptography`); mcp and all other dependencies are unchanged. `cryptography` is a transitive dependency, so no guard-core-mcp source or runtime dependency declaration changed.
+- **Changed** - `uv.lock` refreshed so its recorded constraint matches `mcp>=2`, semgrep and its transitive dependencies are no longer recorded, and `cryptography` is bumped to 50.0.0. The resolved version of mcp is unchanged at 2.0.0.
+
+___
+
 v0.1.5 (2026-08-09)
 -------------------
 

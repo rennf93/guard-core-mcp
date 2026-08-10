@@ -62,7 +62,7 @@ repos:
         pass_filenames: false
       # - id: semgrep
         # name: semgrep
-        # entry: uv run semgrep --config=auto --error guard_core_mcp
+        # entry: uvx --from semgrep semgrep --config=auto --error guard_core_mcp
         # require_serial: true
         # language: system
         # types: [python]
