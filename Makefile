@@ -116,7 +116,7 @@ deptry:
 semgrep:
 	@echo "Running Semgrep static analysis..."
 	@echo ''
-	@uv run semgrep --config=auto guard_core_mcp
+	@uvx --from semgrep semgrep --config=auto guard_core_mcp
 	@find . | grep -E "(__pycache__|\.pyc|\.pyo|\.pytest_cache|\.ruff_cache|\.mypy_cache)" | xargs rm -rf
 
 # Run all security checks
