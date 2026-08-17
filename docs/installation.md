@@ -72,16 +72,16 @@ Call `versions` once the server is registered. `installed` reports whatever vers
 
 ```json
 {
-  "guard_core_mcp": "0.1.5",
+  "guard_core_mcp": "0.1.7",
   "installed": {
-    "guard-core": "3.11.0",
-    "fastapi-guard": "7.5.1",
+    "guard-core": "3.12.0",
+    "fastapi-guard": "7.6.0",
     "guard-agent": "2.8.1"
   },
   "docs_bundled_for": {
-    "fastapi-guard": "7.5.1",
+    "fastapi-guard": "7.6.0",
     "guard-agent": "2.8.1",
-    "guard-core": "3.11.0"
+    "guard-core": "3.12.0"
   }
 }
 ```

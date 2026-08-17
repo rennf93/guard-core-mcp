@@ -92,7 +92,7 @@ def test_describe_field_formats_generic_types_and_undefined_defaults() -> None:
 
     described = describe_field("trusted_proxies", model.model_fields["trusted_proxies"])
 
-    assert described["type"] == "list[str]"
+    assert described["type"] == "tuple[str, Ellipsis]"
     assert described["default"] is None
 
 

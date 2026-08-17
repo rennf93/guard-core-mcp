@@ -1,5 +1,6 @@
 import json
 import time
+import types
 from collections.abc import Iterator, Mapping
 from typing import Any
 
@@ -23,6 +24,15 @@ class _CaseInsensitiveHeaders(Mapping[str, str]):
         return len(self._original)
 
 
+def _headers_with_content_length(
+    headers: Mapping[str, str], body_content: bytes
+) -> dict[str, str]:
+    merged = dict(headers)
+    if body_content and not any(key.lower() == "content-length" for key in merged):
+        merged["content-length"] = str(len(body_content))
+    return merged
+
+
 class _SyntheticRequest:
     def __init__(
         self,
@@ -34,9 +44,12 @@ class _SyntheticRequest:
     ) -> None:
         self._path = path
         self._method = method
-        self._headers = _CaseInsensitiveHeaders(headers)
+        self._headers = _CaseInsensitiveHeaders(
+            _headers_with_content_length(headers, body_content)
+        )
         self._query_params = query_params
         self._body = body_content
+        self._state = types.SimpleNamespace()
 
     @property
     def url_path(self) -> str:
@@ -74,7 +87,7 @@ class _SyntheticRequest:
 
     @property
     def state(self) -> Any:
-        return None
+        return self._state
 
     @property
     def scope(self) -> dict[str, Any]:

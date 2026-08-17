@@ -13,7 +13,7 @@ The Dispatch Pattern
 
 Every adapter follows the same dispatch lifecycle:
 
-1. **Passthrough check** -- skip requests with no client IP or excluded paths.
+1. **Passthrough check** -- skip requests with no client IP entirely; mark an excluded path as exclusion-scoped and fall through to the pipeline, where only ban enforcement and rate limiting still run.
 2. **Route resolution** -- resolve the matched route's `RouteConfig` (decorator settings).
 3. **Security bypass check** -- if the route bypasses all checks, forward immediately.
 4. **Security pipeline execution** -- run the security check pipeline, built to just the checks the configuration and registered routes can trigger out of the 17-check catalogue.
@@ -53,6 +53,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         self.redis_handler = None
         if config.enable_redis:
             from guard_core.handlers.redis_handler import RedisManager
+
             self.redis_handler = RedisManager(config)
 
         self.agent_handler = None
@@ -61,6 +62,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             if agent_config:
                 try:
                     from guard_agent import guard_agent
+
                     self.agent_handler = guard_agent(agent_config)
                 except ImportError:
                     self.logger.warning(
@@ -346,6 +348,7 @@ Guard-core does not manage CORS middleware registration. CORS is framework-speci
 ```python
 from fastapi.middleware.cors import CORSMiddleware
 
+
 @staticmethod
 def configure_cors(app: FastAPI, config: SecurityConfig) -> bool:
     if config.enable_cors:
@@ -388,6 +391,7 @@ Use `app.before_request` and `app.after_request` hooks. Since Flask is synchrono
 
 ```python
 import asyncio
+
 
 @app.before_request
 def guard_before_request():

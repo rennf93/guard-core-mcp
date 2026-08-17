@@ -116,7 +116,8 @@ def test_synthetic_request_exposes_every_protocol_member() -> None:
     assert request.url_full == "https://sandbox/x"
     assert request.url_replace_scheme("http") == "http://sandbox/x"
     assert request.method == "POST"
-    assert request.state is None
+    request.state.example = "value"
+    assert request.state.example == "value"
     assert request.scope == {}
 
 

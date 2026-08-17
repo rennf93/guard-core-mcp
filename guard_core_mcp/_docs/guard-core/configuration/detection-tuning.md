@@ -41,7 +41,19 @@ Maximum character count for content passed to the detection engine. Content exce
 
 **Type**: `int` | **Default**: `262144` | **Range**: 1024 - 10485760
 
-Maximum request body size in bytes read and inspected during detection. Bodies whose `Content-Length` exceeds this are never read or scanned, bounding memory on the detection hot path. Distinct from `detection_max_content_length` (the regex scan window over already-decoded content) and `max_request_size` (the request-size gate that returns a 413).
+Maximum bytes read from the start of the request body and inspected during detection. Bodies whose `Content-Length` exceeds this are never read or scanned, bounding memory on the detection hot path.
+
+This is a memory bound, not full-body coverage. Only the first `detection_max_body_inspect_bytes` bytes of the body are ever scanned, whether they come from a `Content-Length`-bounded read or from an adapter's `BoundedBodyReader.read_body_prefix`. An attacker who pads a request with that many bytes of filler before the actual payload, or splits a signature across the boundary, evades detection; this is inherent to bounded-memory scanning and cannot be closed without reading the whole body. Raise the value to shrink the blind spot at the cost of holding more memory per inspected request; it is a tradeoff, not a full-scan guarantee.
+
+Distinct from `detection_max_content_length` (the regex scan window over already-decoded content) and `max_request_size` (the request-size gate that returns a 413).
+
+### `body_read_timeout`
+
+**Type**: `float` | **Default**: `3.0` | **Range**: 0.0 (exclusive) - 30.0 | **Scope**: both trees
+
+Seconds to wait for an adapter's `read_body_prefix`/`body` call before treating the body as unavailable to detection. In `guard_core` (async) this bounds the wait via `asyncio.wait_for`, against a stalled or misbehaving adapter/stream.
+
+In `guard_core.sync`, a blocking call cannot be cancelled from the outside, so each read attempt runs on its own daemon thread and `body_read_timeout` bounds how long the caller joins that thread; the thread itself keeps running in the background until the adapter's call returns, only the caller stops waiting for it. `sync_body_read_max_concurrent` (default `64`) caps how many such threads may be blocked at once; once that budget is exhausted, further attempts queue for it and give up (logging the exhaustion) rather than spawning without limit.
 
 ### `detection_preserve_attack_patterns`
 

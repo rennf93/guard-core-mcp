@@ -81,8 +81,9 @@ def config_fields(query: str, package: str = "fastapi-guard") -> dict[str, Any]:
 
     An exact field name populates the exact result with that field's type, default,
     required-ness and description. Every query, exact or not, also populates matches
-    with every other field whose name or description contains the query, which is the
-    fastest way to answer whether a setting for some behaviour exists at all.
+    with every other field whose name or description contains every word of the query
+    (case-insensitively, word order does not matter), which is the fastest way to
+    answer whether a setting for some behaviour exists at all.
 
     package is one of fastapi-guard, guard-core, guard-agent.
     """
