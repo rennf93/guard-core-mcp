@@ -52,6 +52,48 @@ If neither threshold is met, the request is rejected (status 400) but the IP is 
 
 ___
 
+Block vs ban
+------------
+
+A block is a decision about one request: it is rejected and nothing about the origin is stored, so the next request from the same IP is evaluated from scratch. A ban is a decision about the IP: it is stored with an expiry and every later request from it is rejected by `IpSecurityCheck._check_banned_ip` before the remaining checks run. The caller sees the same 403 either way; the difference is entirely server-side.
+
+| Aspect | Block | Ban |
+|--------|-------|-----|
+| Client sees | 403 (400 for an unbanned detection hit) | 403 |
+| State retained | none | IP plus expiry, in `TTLCache` and in Redis when configured |
+| Next request | full pipeline runs again | short-circuits at the ban check |
+| Lifetime | that one request | `auto_ban_duration` (default 3600s) or the matching `ThreatBanConfig.duration` |
+
+### Cost of a banned request
+
+The ban lookup is the first thing `IpSecurityCheck` does, and `IpSecurityCheck` is registered ahead of `CloudProviderCheck`, `UserAgentCheck`, `RateLimitCheck` and `SuspiciousActivityCheck`. A banned IP therefore skips the country and cloud-provider lookups, user-agent matching, rate-limit bookkeeping and the whole payload detection sweep. Checks registered before it (route config, emergency mode, HTTPS enforcement, request size, required headers, authentication, referrer, custom validators, time window) still run, so a ban is a cheaper request, not a free one.
+
+### Logging
+
+A banned request is not silent. It emits one `log_activity` line at `log_suspicious_level` with `reason="Banned IP attempted access: <ip>"`, plus one `ip_blocked` event carrying `filter_type="banned"`. A fresh detection hit typically writes two lines (the detection and the block), so bans reduce log volume rather than eliminate it. Suppress the line with `muted_check_logs={"ip_security"}`.
+
+### exclude_paths enforces bans and rate limits, not evidence-gathering
+
+`exclude_paths` is evaluated in `BypassHandler.handle_passthrough`. A matched path no longer skips every check: `handle_passthrough` marks the request `guard_exclusion_scoped` on `request.state` and returns `None`, so the request still reaches `SecurityCheckPipeline.execute`. There, only `route_config`, `ip_security`, and `rate_limit` run for an exclusion-scoped request; every other check, including `suspicious_activity` (detection), is skipped. A banned IP is still blocked by `IpSecurityCheck._check_banned_ip` on an excluded path, a statically blacklisted or whitelisted IP, a blocked country, or a blocked cloud provider is likewise still enforced by `IpSecurityCheck._check_global_ip_restrictions`, and rate limiting still applies. What an excluded path no longer does is generate new evidence against an IP: detection does not run, so no penetration-attempt count is incremented and no auto-ban can fire from it (a block on an excluded path never calls `escalate_identity_violation` either), and `BehavioralProcessor` treats an exclusion-scoped request as having no behavior tracker, so it is never sampled for usage/frequency/return-pattern rules and can never trip a behavioral auto-ban, no matter how many times the path is hit. Reserve `exclude_paths` for endpoints, such as health checks, where skipping detection and behavioral analysis is safe but a standing ban, a static IP/country/cloud restriction, or a rate limit should still apply.
+
+### Matrix-param dot-segments are collapsed before exclusion matching
+
+`normalize_url_path` splits each path segment at its first `;`. When the part before the semicolon is exactly `.` or `..`, the segment is resolved as that dot-segment (and its trailing params discarded) before the traversal collapse runs; every other segment, including a real matrix parameter, is left untouched. So `/static/..;/etc/passwd` now normalises to `/etc/passwd`, which no longer starts with `/static/`, and `path_is_excluded` correctly reports it as **not** excluded when `/static` is configured in `exclude_paths`. `/static/.;x/js/app.js` normalises to `/static/js/app.js` and stays excluded, since `.;x` resolves to `.` and is dropped rather than treated as a real subdirectory. A non-dot segment such as `/orders;customer=42/items` or `/static/app.js;jsessionid=ABC123` is unaffected: its base (`orders`, `app.js`) is not `.` or `..`, so the whole segment, semicolon and params included, is preserved literally, exactly as valid RFC 3986 matrix-parameter syntax requires.
+
+The check runs on the already percent-decoded path, so a percent-encoded semicolon (`%3b`, `%3B`, or a nested encoding such as `%253b`) is resolved to a literal `;` by the existing decode step before the dot-segment check ever runs, and is handled without any special-casing. A backslash-delimited variant (`..;\etc\passwd`) is covered the same way, since backslashes are folded to `/` before segments are split. No other separator receives this treatment: guard-core has found no evidence that any framework it ships an adapter for (Flask/Werkzeug, Starlette/FastAPI, Django) or a fronting nginx strips a comma-delimited, or otherwise-delimited, path parameter the way servlet containers strip `;params`, so `,` and every other character keep their ordinary, literal meaning. This closes the bypass regardless of deployment topology; it no longer depends on the assumption that no servlet-style component sits in front of guard-core.
+
+What remains, and is unchanged by this fix, is the identity trade-off for non-dot matrix-param segments: `path_is_excluded` still requires an exact `/` boundary, so `/static;version=2/app.js` does not match an `/static` exclusion. If a downstream component strips a non-dot segment's params before its own routing, guard-core's view of the path can still diverge from the backend's for that literal segment, but only in the stricter direction, running the full check pipeline on a request guard-core does not recognise as excluded. That is an availability nuance, never a security one; a route that needs to tolerate stripped matrix params on a non-dot segment should use an exact-path entry in `exclude_paths` rather than a prefix.
+
+### Without Redis
+
+Bans live only in the process-local `TTLCache` (`maxsize=10000`, `ttl=3600`). They are still enforced, but each worker process keeps its own set, so an IP banned by one worker is unknown to the others until it misbehaves there too, and a restart clears every ban. A `duration` above `LOCAL_CACHE_TTL_CAP_SECONDS` (3600) raises `ValueError` in this mode, since the local cache cannot outlive its own TTL. With Redis attached, the ban is shared across every process and survives restarts.
+
+### Passive mode
+
+Passive mode never bans. Per-category counters still increment and the detection is still logged and reported, but `_handle_suspicious_passive_mode` returns without calling `ban_ip`, and an already-banned IP is logged with `action_taken="logged_only"` instead of being rejected. Bans also require `enable_ip_banning` to stay `True`.
+
+___
+
 Example
 -------
 

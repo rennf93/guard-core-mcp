@@ -10,6 +10,21 @@ Release Notes
 
 ___
 
+v0.1.7 (2026-08-15)
+-------------------
+
+check_payload body-scan fix for guard-core 3.12.0, documentation accuracy sweep, and vendored docs re-synced to the 3.12.0 line (v0.1.7)
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+- **Fixed** - Every worked example in the installation guide and tool reference still showed the versions frozen at the 0.1.5 sweep: `versions()`'s own `guard_core_mcp` field showed `0.1.5` although the server had since moved to 0.1.6, and `installed`/`docs_bundled_for` still showed guard-core 3.11.0 and fastapi-guard 7.5.1 despite the sibling repos having released 3.12.0 and 7.6.0. The `version` field in both `validate_config` examples and the `config_fields` example carried the same stale 7.5.1, and the `search_docs` example's second result score was stale at 76 now that fastapi-guard's growing release notes push it to 79. All five example blocks now show real, live output captured against the installed 3.12.0/7.6.0/2.8.1 line.
+- **Fixed** - `config_fields`'s tool docstring said `matches` lists every field "whose name or description contains the query", which is not what the implementation does: it splits the query into words and requires every word to appear somewhere in the combined name and description, independent of order or adjacency. `config_fields("limit rate", ...)` matches `rate_limit` even though the literal substring "limit rate" appears nowhere in its name or description. The docstring now says "contains every word of the query (case-insensitively, word order does not matter)", matching what [Tools](https://rennf93.github.io/guard-core-mcp/latest/tools/) already documented correctly.
+- **Fixed** - `pyproject.toml`'s package description used an em dash between the product name and its feature list; replaced with a plain hyphen.
+- **Changed** - Vendored `_docs` re-synced from the sibling repos: guard-core 3.12.0, fastapi-guard 7.6.0, guard-agent 2.8.1 (unchanged). This picks up guard-core's exclusion-path enforcement fix (an excluded path now still enforces IP bans, blacklists, blocked countries, blocked cloud providers and rate limits; only detection and behavioral tracking are skipped there), the identity-block escalation fix so a route-level IP block is no longer bypassed by a stale global-whitelist flag left over from the earlier global check, and fastapi-guard's bounded body reading for chunked requests plus working response-body `return_pattern` rules.
+- **Changed** - `uv.lock` and the development environment refreshed to resolve guard-core 3.12.0 and fastapi-guard 7.6.0; `guard-agent` was already current at 2.8.1. Upgraded individually rather than via a blanket `uv lock --upgrade`, which still downgrades `mcp` from 2.0.0 to 1.23.3 and breaks the server at import. `pyproject.toml` runtime dependencies remain unpinned and unchanged.
+- **Fixed** - `check_payload`'s sandbox request was not compliant with guard-core 3.12.0's body-read contract, so the detection stage silently skipped the request body. guard-core 3.12.0's `detect_penetration_attempt` reads `content-length` to decide whether to scan the body and caches the capped body on `request.state`; the synthetic request carried no `content-length` header and returned `None` for `state`, so detection took the no-content-length branch and never inspected the body, and the body-cache path would have raised `AttributeError` if reached. The synthetic request now injects a `content-length` header when a body is present and exposes a mutable `state` namespace, so the detection tool actually inspects the request body against guard-core 3.12.0. This is a runtime behaviour change for `check_payload` (the body was not scanned before), not a documentation change.
+
+___
+
 v0.1.6 (2026-08-10)
 -------------------
 

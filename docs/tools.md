@@ -33,16 +33,16 @@ versions()
 
 ```json
 {
-  "guard_core_mcp": "0.1.5",
+  "guard_core_mcp": "0.1.7",
   "installed": {
-    "guard-core": "3.11.0",
-    "fastapi-guard": "7.5.1",
+    "guard-core": "3.12.0",
+    "fastapi-guard": "7.6.0",
     "guard-agent": "2.8.1"
   },
   "docs_bundled_for": {
-    "fastapi-guard": "7.5.1",
+    "fastapi-guard": "7.6.0",
     "guard-agent": "2.8.1",
-    "guard-core": "3.11.0"
+    "guard-core": "3.12.0"
   }
 }
 ```
@@ -77,7 +77,7 @@ validate_config({"ipinfo_token": "abc123"}, "fastapi-guard")
 {
   "valid": true,
   "package": "fastapi-guard",
-  "version": "7.5.1",
+  "version": "7.6.0",
   "model": "SecurityConfig",
   "errors": [],
   "unknown_fields": [],
@@ -102,7 +102,7 @@ validate_config({"rate_limit": 100, "enable_rate_limit": True}, "fastapi-guard")
 {
   "valid": false,
   "package": "fastapi-guard",
-  "version": "7.5.1",
+  "version": "7.6.0",
   "model": "SecurityConfig",
   "errors": [],
   "unknown_fields": [
@@ -144,7 +144,7 @@ config_fields("rate_limit", "fastapi-guard")
 ```json
 {
   "package": "fastapi-guard",
-  "version": "7.5.1",
+  "version": "7.6.0",
   "query": "rate_limit",
   "exact": {
     "name": "rate_limit",
@@ -224,7 +224,7 @@ search_docs("rate limiting", "fastapi-guard", limit=3)
       "heading": "",
       "snippet": "- **Geographic rate limit check**: Fixed geo-based rate limiting by implementing the missing `_check_geo_rate_limit` method in `RateLimitCheck`. Previously, geo rate limits configured via the `@security.geo_rate_limit` decorator were stored but never enforced. The rate limit pipeline now correctly e",
       "url": "https://rennf93.github.io/fastapi-guard/latest/release-notes/",
-      "score": 76
+      "score": 79
     },
     {
       "package": "fastapi-guard",
