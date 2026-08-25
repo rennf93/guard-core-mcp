@@ -60,7 +60,7 @@ jobs:
       - name: Run AI inference
         id: inference
         if: steps.target.outputs.skip != 'true'
-        uses: actions/ai-inference@v2.1.1
+        uses: actions/ai-inference@v3
         with:
           prompt: |
             You are an assistant that summarizes a GitHub issue for maintainers of `guard-core-mcp` (the MCP server that lets AI coding agents query config validation, documentation and live detection for the fastapi-guard / guard-core / guard-agent ecosystem).
