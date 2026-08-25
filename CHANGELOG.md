@@ -3,6 +3,18 @@ Release Notes
 
 ___
 
+v0.1.8 (2026-08-25)
+-------------------
+
+Vendored docs re-synced to the guard-core 3.13.0 / fastapi-guard 7.7.0 / guard-agent 2.9.0 line, and worked examples refreshed (v0.1.8)
+---------------------------------------------------------------------------------------------------------------------------------------
+
+- **Changed** - Vendored `_docs` re-synced from the sibling repos: guard-core 3.13.0, fastapi-guard 7.7.0, guard-agent 2.9.0. This picks up guard-core 3.13.0's auth-verifier machinery (`require_auth` and `api_key_auth` now require a resolvable verifier and fail-closed 401 without one; `require_authorization_header` is the presence-only escape hatch; the approved principal lands on `request.state.auth_principal`), the new `threat_ban_config` per-category ban-thresholds field and the `enable_rate_limit_auto_ban` flag that feeds rate-limit violations into the penetration-detection auto-ban engine, and the `check_ip_access` / `check_rate_limit_by_ip` / `is_ip_allowed` helpers re-exported in `guard_core.__all__`; fastapi-guard 7.7.0's auth-verifier lockstep for the same guard-core release; and guard-agent 2.9.0 carrying `guard_core_version` on its telemetry.
+- **Changed** - `uv.lock` and the development environment refreshed to resolve guard-core 3.13.0, fastapi-guard 7.7.0 and guard-agent 2.9.0. Each package was upgraded individually (`uv lock --upgrade-package`, with `--no-cache` for guard-agent while PyPI propagation caught up after its publish) rather than via a blanket `uv lock --upgrade`, which still downgrades `mcp` from 2.0.0 to 1.23.3 and breaks the server at import. `mcp` stays at 2.0.0; `pyproject.toml` runtime dependencies remain unpinned and unchanged.
+- **Fixed** - The worked examples in the installation guide and tool reference were frozen at the 0.1.7 line (guard-core 3.12.0, fastapi-guard 7.6.0, guard-agent 2.8.1). All five example blocks now show real, live output captured against the installed 3.13.0 / 7.7.0 / 2.9.0 line: `versions()` reports `guard_core_mcp` 0.1.8 and the new installed and bundled versions; the `validate_config` typo example's `did_you_mean` now lists two suggestions (`enable_rate_limiting` and the new `enable_rate_limit_auto_ban`) where it previously listed one; the `config_fields` example's `matches` now includes `threat_ban_config` and `enable_rate_limit_auto_ban`, which both mention `rate_limit` and so surface for that query for the first time; and the `search_docs` example's second-result score moved from 79 to 80 as fastapi-guard's release notes grew.
+
+___
+
 v0.1.7 (2026-08-15)
 -------------------
 

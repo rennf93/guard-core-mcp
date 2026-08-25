@@ -33,16 +33,16 @@ versions()
 
 ```json
 {
-  "guard_core_mcp": "0.1.7",
+  "guard_core_mcp": "0.1.8",
   "installed": {
-    "guard-core": "3.12.0",
-    "fastapi-guard": "7.6.0",
-    "guard-agent": "2.8.1"
+    "guard-core": "3.13.0",
+    "fastapi-guard": "7.7.0",
+    "guard-agent": "2.9.0"
   },
   "docs_bundled_for": {
-    "fastapi-guard": "7.6.0",
-    "guard-agent": "2.8.1",
-    "guard-core": "3.12.0"
+    "fastapi-guard": "7.7.0",
+    "guard-agent": "2.9.0",
+    "guard-core": "3.13.0"
   }
 }
 ```
@@ -77,7 +77,7 @@ validate_config({"ipinfo_token": "abc123"}, "fastapi-guard")
 {
   "valid": true,
   "package": "fastapi-guard",
-  "version": "7.6.0",
+  "version": "7.7.0",
   "model": "SecurityConfig",
   "errors": [],
   "unknown_fields": [],
@@ -102,13 +102,13 @@ validate_config({"rate_limit": 100, "enable_rate_limit": True}, "fastapi-guard")
 {
   "valid": false,
   "package": "fastapi-guard",
-  "version": "7.6.0",
+  "version": "7.7.0",
   "model": "SecurityConfig",
   "errors": [],
   "unknown_fields": [
     {
       "name": "enable_rate_limit",
-      "did_you_mean": ["enable_rate_limiting"]
+      "did_you_mean": ["enable_rate_limiting", "enable_rate_limit_auto_ban"]
     }
   ],
   "deprecated": []
@@ -144,7 +144,7 @@ config_fields("rate_limit", "fastapi-guard")
 ```json
 {
   "package": "fastapi-guard",
-  "version": "7.6.0",
+  "version": "7.7.0",
   "query": "rate_limit",
   "exact": {
     "name": "rate_limit",
@@ -154,6 +154,20 @@ config_fields("rate_limit", "fastapi-guard")
     "description": "Maximum requests per rate_limit_window"
   },
   "matches": [
+    {
+      "name": "threat_ban_config",
+      "type": "mappingproxy[str, ThreatBanConfig]",
+      "default": null,
+      "required": false,
+      "description": "Per-category ban thresholds and durations. Categories are the penetration-detection categories plus the pseudo-category 'rate_limit' (used only when enable_rate_limit_auto_ban is on). Unlisted categories fall back to auto_ban_threshold / auto_ban_duration."
+    },
+    {
+      "name": "enable_rate_limit_auto_ban",
+      "type": "bool",
+      "default": "False",
+      "required": false,
+      "description": "Feed rate-limit violations into the same auto-ban engine used for penetration detection: each active-mode (non-passive) violation increments the 'rate_limit' category of the existing suspicious-count structure and runs the same threshold logic (threat_ban_config['rate_limit'] override first, then the flat auto_ban_threshold / auto_ban_duration). Requires enable_ip_banning to actually ban. Default off: zero behavior change unless enabled."
+    },
     {
       "name": "rate_limit_window",
       "type": "int",
@@ -224,7 +238,7 @@ search_docs("rate limiting", "fastapi-guard", limit=3)
       "heading": "",
       "snippet": "- **Geographic rate limit check**: Fixed geo-based rate limiting by implementing the missing `_check_geo_rate_limit` method in `RateLimitCheck`. Previously, geo rate limits configured via the `@security.geo_rate_limit` decorator were stored but never enforced. The rate limit pipeline now correctly e",
       "url": "https://rennf93.github.io/fastapi-guard/latest/release-notes/",
-      "score": 79
+      "score": 80
     },
     {
       "package": "fastapi-guard",
