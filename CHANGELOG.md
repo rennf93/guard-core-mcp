@@ -3,6 +3,18 @@ Release Notes
 
 ___
 
+v0.1.9 (2026-08-26)
+-------------------
+
+Vendored docs re-synced to guard-core 3.14.0 / fastapi-guard 7.8.0, and validate_config now surfaces guard-core's construction-time warnings (v0.1.9)
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+- **Changed** - Vendored `_docs` re-synced from the sibling repos: guard-core 3.14.0, fastapi-guard 7.8.0, guard-agent 2.9.0 (unchanged). This picks up guard-core 3.14.0's post-3.13.0 hardening pass: `SecurityConfig` now warns at construction on a `trusted_proxies` `/0` network (`0.0.0.0/0`, `::/0`) and on an empty `enabled_detection_categories` with detection enabled; a request with no client address is now rejected instead of skipping the entire security pipeline, with a new `unix` `trusted_proxies` token for Unix-socket deployments; `X-Forwarded-For` chain warnings for a depth that cannot be satisfied or that resolves to another trusted proxy; rate-limit and behavior-tracker in-memory stores are now LRU-bounded at 10,000 clients; `detection_max_scan_values` bounds the number of request values scanned per request (default 512); ban address canonicalization closes a silent no-op between IP spellings; and GeoIP, Redis-outage-at-startup and Azure cloud-IP-range resilience fixes. And fastapi-guard 7.8.0's lockstep for the same guard-core release: repeated `X-Forwarded-For` header lines are now joined before guard-core resolves the client, a `guard_websocket` dependency closes the gap where `SecurityMiddleware` never ran for WebSocket scopes, and a Redis outage at startup now returns a clean 503 instead of crashing.
+- **Fixed** - `validate_config` only captured `warnings.warn` records (`DeprecationWarning`), missing guard-core's `logger.warning` signals for its own construction-time misconfiguration checks: an unknown constructor keyword, the 3.14.0 `trusted_proxies` `/0` warning, and the empty `enabled_detection_categories` warning. A temporary `logging.Handler` is now attached to the `guard_core` logger for the duration of `SecurityConfig` construction, and its deduplicated records are reported under a new `construction_warnings` field; the logger's original handlers and level are always restored afterward. The `validate_config` and `check_payload` tool docstrings now document this and guard-core 3.14.0's `detection_max_scan_values` request-value scan cap (default 512, names and values counted; a payload beyond it gets a verdict on the scanned prefix only).
+- **Changed** - `uv.lock` is deliberately untouched. guard-core 3.14.0 and fastapi-guard 7.8.0 are not yet published to PyPI, so `uv lock` cannot resolve them, and a blanket `uv lock --upgrade` would still downgrade `mcp`. Run `uv lock --upgrade-package guard-core --upgrade-package fastapi-guard` once both are published.
+
+___
+
 v0.1.8 (2026-08-25)
 -------------------
 
