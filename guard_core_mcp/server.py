@@ -65,6 +65,11 @@ def validate_config(
     pydantic silently ignores them, so a misspelled setting does nothing at runtime
     and raises no error anywhere else.
 
+    Also surfaces guard-core's own construction-time misconfiguration warnings
+    (logged rather than raised) under construction_warnings: an unknown constructor
+    keyword, a trusted_proxies /0 network, and enabled_detection_categories empty
+    while penetration detection is enabled all land here as plain messages.
+
     package is one of fastapi-guard, guard-core, guard-agent.
     """
     try:
@@ -144,6 +149,11 @@ async def check_payload(
 
     body takes either a raw string or a JSON object or array, which is serialized for
     you, so pass the request body in whatever shape you already have it.
+
+    guard-core 3.14.0 scans at most detection_max_scan_values request values (default
+    512, names and values counted) per request across the whole detection pass. A
+    payload beyond that cap only gets a verdict on the scanned prefix; anything past
+    the cap is not inspected.
     """
     try:
         return await detection_module.check_payload(

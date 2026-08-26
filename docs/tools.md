@@ -33,16 +33,16 @@ versions()
 
 ```json
 {
-  "guard_core_mcp": "0.1.8",
+  "guard_core_mcp": "0.1.9",
   "installed": {
-    "guard-core": "3.13.0",
-    "fastapi-guard": "7.7.0",
+    "guard-core": "3.14.0",
+    "fastapi-guard": "7.8.0",
     "guard-agent": "2.9.0"
   },
   "docs_bundled_for": {
-    "fastapi-guard": "7.7.0",
+    "fastapi-guard": "7.8.0",
     "guard-agent": "2.9.0",
-    "guard-core": "3.13.0"
+    "guard-core": "3.14.0"
   }
 }
 ```
@@ -63,7 +63,7 @@ def validate_config(config: dict[str, Any], package: str = "fastapi-guard") -> d
 | `config` | `dict[str, Any]` | required | The config dict to validate |
 | `package` | `str` | `"fastapi-guard"` | One of `fastapi-guard`, `guard-core`, `guard-agent` |
 
-Validates `config` against the installed library's real Pydantic model (`SecurityConfig` for `fastapi-guard`/`guard-core`, `AgentConfig` for `guard-agent`) and reports three separate kinds of problems: unknown keys pydantic would otherwise silently ignore (with typo suggestions), validation errors, and `DeprecationWarning`s the model raises for fields that still work but shouldn't be used.
+Validates `config` against the installed library's real Pydantic model (`SecurityConfig` for `fastapi-guard`/`guard-core`, `AgentConfig` for `guard-agent`) and reports four separate kinds of problems: unknown keys pydantic would otherwise silently ignore (with typo suggestions), validation errors, `DeprecationWarning`s the model raises for fields that still work but shouldn't be used, and, under `construction_warnings`, guard-core's own `logger.warning` signals for construction-time misconfigurations it does not raise on: an unknown constructor keyword, a `trusted_proxies` `/0` network, and an empty `enabled_detection_categories` with detection enabled.
 
 **Example call, a deprecated field**:
 
@@ -77,7 +77,7 @@ validate_config({"ipinfo_token": "abc123"}, "fastapi-guard")
 {
   "valid": true,
   "package": "fastapi-guard",
-  "version": "7.7.0",
+  "version": "7.8.0",
   "model": "SecurityConfig",
   "errors": [],
   "unknown_fields": [],
@@ -86,7 +86,8 @@ validate_config({"ipinfo_token": "abc123"}, "fastapi-guard")
       "field": "ipinfo_token",
       "message": "ipinfo_token is deprecated and will be removed in a future release; create a custom geo_ip_handler instead."
     }
-  ]
+  ],
+  "construction_warnings": []
 }
 ```
 
@@ -102,7 +103,7 @@ validate_config({"rate_limit": 100, "enable_rate_limit": True}, "fastapi-guard")
 {
   "valid": false,
   "package": "fastapi-guard",
-  "version": "7.7.0",
+  "version": "7.8.0",
   "model": "SecurityConfig",
   "errors": [],
   "unknown_fields": [
@@ -111,11 +112,14 @@ validate_config({"rate_limit": 100, "enable_rate_limit": True}, "fastapi-guard")
       "did_you_mean": ["enable_rate_limiting", "enable_rate_limit_auto_ban"]
     }
   ],
-  "deprecated": []
+  "deprecated": [],
+  "construction_warnings": [
+    "SecurityConfig received unknown field 'enable_rate_limit'; it was ignored and had no effect. Did you mean 'enable_rate_limiting'?"
+  ]
 }
 ```
 
-`enable_rate_limit` isn't a `SecurityConfig` field, the real one is `enable_rate_limiting`, and Pydantic would have accepted and then ignored it silently. A type error (for example `{"rate_limit": "not-a-number"}`) instead produces an entry in `errors`, each with `field`, `message`, and the offending `input`.
+`enable_rate_limit` isn't a `SecurityConfig` field, the real one is `enable_rate_limiting`, and Pydantic would have accepted and then ignored it silently, which is why the same problem also shows up in `construction_warnings`: guard-core logs it as a `logger.warning` on construction. A type error (for example `{"rate_limit": "not-a-number"}`) instead produces an entry in `errors`, each with `field`, `message`, and the offending `input`.
 
 ___
 
@@ -144,7 +148,7 @@ config_fields("rate_limit", "fastapi-guard")
 ```json
 {
   "package": "fastapi-guard",
-  "version": "7.7.0",
+  "version": "7.8.0",
   "query": "rate_limit",
   "exact": {
     "name": "rate_limit",
@@ -238,7 +242,7 @@ search_docs("rate limiting", "fastapi-guard", limit=3)
       "heading": "",
       "snippet": "- **Geographic rate limit check**: Fixed geo-based rate limiting by implementing the missing `_check_geo_rate_limit` method in `RateLimitCheck`. Previously, geo rate limits configured via the `@security.geo_rate_limit` decorator were stored but never enforced. The rate limit pipeline now correctly e",
       "url": "https://rennf93.github.io/fastapi-guard/latest/release-notes/",
-      "score": 80
+      "score": 85
     },
     {
       "package": "fastapi-guard",
@@ -312,7 +316,7 @@ async def check_payload(
 | `body` | `str \| dict \| list \| None` | `None` | Request body. A raw string is sent as-is; a JSON object or array is serialized for you |
 | `config` | `dict[str, Any] \| None` | `None` | `SecurityConfig` fields to test how a setting changes the verdict |
 
-The only async tool. Builds a synthetic request from the arguments and runs it through guard-core's real `detect_penetration_attempt`, using a `SecurityConfig` built from `config` (defaulting to guard-core's defaults) with `enable_redis` always forced to `False`, the sandbox never touches Redis, so results are Redis-independent by construction and a caller cannot re-enable it. `elapsed_ms` reflects actual detection time for that call and varies between runs; the values below are one real sample, not a promise. `headers` is matched case-insensitively, the same way guard-core's own `GuardRequest` protocol requires. A `config` value that fails `SecurityConfig` validation returns `{"error": "invalid config", "errors": [...]}`, with each entry in the same `field`/`message`/`input` shape `validate_config` reports for the identical failure.
+The only async tool. Builds a synthetic request from the arguments and runs it through guard-core's real `detect_penetration_attempt`, using a `SecurityConfig` built from `config` (defaulting to guard-core's defaults) with `enable_redis` always forced to `False`, the sandbox never touches Redis, so results are Redis-independent by construction and a caller cannot re-enable it. `elapsed_ms` reflects actual detection time for that call and varies between runs; the values below are one real sample, not a promise. `headers` is matched case-insensitively, the same way guard-core's own `GuardRequest` protocol requires. A `config` value that fails `SecurityConfig` validation returns `{"error": "invalid config", "errors": [...]}`, with each entry in the same `field`/`message`/`input` shape `validate_config` reports for the identical failure. guard-core 3.14.0 scans at most `detection_max_scan_values` request values (default 512, names and values counted) per request across the whole detection pass; a payload beyond that cap gets a verdict on the scanned prefix only.
 
 !!! warning "This is the detection stage, not the whole pipeline"
     `check_payload` runs `detect_penetration_attempt` and nothing else. A real request
@@ -334,10 +338,10 @@ await check_payload(path="/search", method="GET", query={"q": "1' OR '1'='1"})
 ```json
 {
   "is_threat": true,
-  "trigger_info": "Query param 'q': Value matched pattern '(?i)(?:OR|AND)\\s+'[\\w\\d]*'='[\\w\\d]*'?'",
+  "trigger_info": "Query param 'q': Value matched pattern '(?i)(?:OR|AND)\\s+(?:'[\\w\\d]*'='[\\w\\d]*'?|[@:$][A-Za-z_]\\w*\\s*=\\s*[@:$][A-Za-z_]\\w*)'",
   "threat_categories": ["sqli"],
   "threat_scores": {"sqli": 1.0},
-  "elapsed_ms": 4.35
+  "elapsed_ms": 10.32
 }
 ```
 
@@ -355,6 +359,6 @@ await check_payload(path="/search", method="GET", query={"q": "hello world"})
   "trigger_info": "",
   "threat_categories": [],
   "threat_scores": {},
-  "elapsed_ms": 2.67
+  "elapsed_ms": 4.02
 }
 ```

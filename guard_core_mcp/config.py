@@ -1,6 +1,8 @@
 import difflib
 import importlib
 import importlib.metadata
+import logging
+import threading
 import typing
 import warnings
 from typing import Any
@@ -75,6 +77,29 @@ def _deprecation_entry(message: str, known_fields: set[str]) -> dict[str, str | 
     }
 
 
+class _ConstructionWarningCapture(logging.Handler):
+    def __init__(self) -> None:
+        super().__init__(level=logging.WARNING)
+        self.records: list[logging.LogRecord] = []
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self.records.append(record)
+
+    def messages(self) -> list[str]:
+        seen: set[str] = set()
+        deduped: list[str] = []
+        for record in self.records:
+            message = record.getMessage()
+            if message in seen:
+                continue
+            seen.add(message)
+            deduped.append(message)
+        return deduped
+
+
+_guard_core_logger_lock = threading.Lock()
+
+
 def parse_validation_error(exception: ValidationError) -> list[dict[str, Any]]:
     return [
         {
@@ -117,13 +142,23 @@ def validate_config(
     ]
 
     errors: list[dict[str, Any]] = []
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always")
+    guard_core_logger = logging.getLogger("guard_core")
+    capture = _ConstructionWarningCapture()
+    with _guard_core_logger_lock:
+        original_level = guard_core_logger.level
+        guard_core_logger.addHandler(capture)
+        guard_core_logger.setLevel(logging.WARNING)
         try:
-            model(**config)
-        except ValidationError as exception:
-            errors = parse_validation_error(exception)
-            _retry_without_rejected_fields(model, config, exception)
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                try:
+                    model(**config)
+                except ValidationError as exception:
+                    errors = parse_validation_error(exception)
+                    _retry_without_rejected_fields(model, config, exception)
+        finally:
+            guard_core_logger.removeHandler(capture)
+            guard_core_logger.setLevel(original_level)
 
     deprecated = []
     reported: set[str] = set()
@@ -144,6 +179,7 @@ def validate_config(
         "errors": errors,
         "unknown_fields": unknown_fields,
         "deprecated": deprecated,
+        "construction_warnings": capture.messages(),
     }
 
 
