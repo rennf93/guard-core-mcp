@@ -1,6 +1,8 @@
 import importlib.metadata
+import logging
 import typing
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 from pydantic import BaseModel, model_validator
@@ -202,3 +204,91 @@ def test_unrelated_warnings_are_ignored_and_repeats_collapse(monkeypatch) -> Non
         "value is deprecated and will be removed"
     ]
     assert report["deprecated"][0]["field"] == "value"
+
+
+def _guard_core_logger_snapshot() -> tuple[list[logging.Handler], int]:
+    logger = logging.getLogger("guard_core")
+    return list(logger.handlers), logger.level
+
+
+def test_trusted_proxies_prefix_zero_warning_is_reported() -> None:
+    before = _guard_core_logger_snapshot()
+
+    report = validate_config({"trusted_proxies": ["0.0.0.0/0"]}, package="guard-core")
+
+    assert any(
+        "trusted_proxies contains a /0 network" in message
+        for message in report["construction_warnings"]
+    )
+    assert _guard_core_logger_snapshot() == before
+
+
+def test_empty_enabled_detection_categories_warning_is_reported() -> None:
+    before = _guard_core_logger_snapshot()
+
+    report = validate_config({"enabled_detection_categories": []}, package="guard-core")
+
+    assert any(
+        "enabled_detection_categories is empty" in message
+        for message in report["construction_warnings"]
+    )
+    assert _guard_core_logger_snapshot() == before
+
+
+def test_unknown_keyword_warning_is_reported() -> None:
+    before = _guard_core_logger_snapshot()
+
+    report = validate_config({"totally_bogus_field_xyz": True}, package="guard-core")
+
+    assert any(
+        "SecurityConfig received unknown field 'totally_bogus_field_xyz'" in message
+        for message in report["construction_warnings"]
+    )
+    assert _guard_core_logger_snapshot() == before
+
+
+def test_clean_config_reports_no_construction_warnings() -> None:
+    before = _guard_core_logger_snapshot()
+
+    report = validate_config({"passive_mode": True}, package="guard-core")
+
+    assert report["construction_warnings"] == []
+    assert _guard_core_logger_snapshot() == before
+
+
+def test_unknown_keyword_warning_collapses_across_the_validation_retry() -> None:
+    report = validate_config(
+        {"trusted_proxy_depth": "two", "totally_bogus_field_xyz": True},
+        package="guard-core",
+    )
+
+    messages = [
+        message
+        for message in report["construction_warnings"]
+        if "totally_bogus_field_xyz" in message
+    ]
+    assert len(messages) == 1
+
+
+def test_concurrent_validate_config_calls_do_not_leak_warnings_between_each_other() -> (
+    None
+):
+    def call_prefix_zero() -> dict:
+        return validate_config({"trusted_proxies": ["0.0.0.0/0"]}, package="guard-core")
+
+    def call_clean() -> dict:
+        return validate_config({"passive_mode": True}, package="guard-core")
+
+    trials = 100
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        for _ in range(trials):
+            future_dirty = pool.submit(call_prefix_zero)
+            future_clean = pool.submit(call_clean)
+            dirty_report = future_dirty.result()
+            clean_report = future_clean.result()
+
+            assert clean_report["construction_warnings"] == []
+            assert any(
+                "trusted_proxies contains a /0 network" in message
+                for message in dirty_report["construction_warnings"]
+            )
