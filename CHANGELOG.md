@@ -3,6 +3,18 @@ Release Notes
 
 ___
 
+v0.1.10 (2026-08-27)
+-------------------
+
+Vendored docs re-synced to guard-core 3.15.0 / fastapi-guard 7.8.2, and check_payload now reflects guard-core 3.15.0's auto-configuring detection singleton (v0.1.10)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+- **Changed** - Vendored `_docs` re-synced from the sibling repos: guard-core 3.15.0, fastapi-guard 7.8.2, guard-agent 2.9.0 (unchanged). This picks up guard-core 3.15.0's post-3.14.0 follow-ups: the rate limiter now honors `redis_fail_open` on a Redis failure instead of always falling back to the in-memory window (breaking when `redis_fail_open=False`, the default: a Redis outage now raises `GuardRedisError` and lets `fail_secure` decide, rather than silently falling back); a new `detection_max_json_depth` (default 32) bounds how deep a JSON body is walked structurally and a new `detection_max_scan_chars` (default 65536) bounds the total characters scanned per request, alongside the existing `detection_max_scan_values`; `SecurityConfig` now warns at construction when `whitelist` contains a `/0` network, mirroring the existing `trusted_proxies` warning; a declared `trusted_proxy_depth` that over-counts the real proxy hops is now corrected by walking the `X-Forwarded-For` chain right to left instead of silently trusting a client-rotatable entry; a body whose declared `Content-Length` exceeds `detection_max_body_inspect_bytes` is now read and scanned through the adapter's bounded reader instead of skipped outright; and `setup_custom_logging` no longer double-logs into a host's own root logger handlers. And fastapi-guard 7.8.2's lockstep: `StarletteGuardRequest.url_path` and the websocket adapter's equivalent now resolve the route-relative path under an ASGI `root_path` or a mounted sub-app instead of the full mount-prefixed path, so `exclude_paths` and `endpoint_rate_limits` keys match correctly under a mount; this also picks up 7.8.1's `make_guard_websocket` factory, close-code constants, and Redis-manager fixes for the websocket guard.
+- **Fixed** - `check_payload`'s docstring described guard-core 3.14.0's `detection_max_scan_values` cap alone; it now also documents 3.15.0's `detection_max_scan_chars` (default 65536) and `detection_max_json_depth` (default 32) caps, and the fact that `detect_penetration_attempt` now configures guard-core's detection singleton from the config it receives. `check_payload` never configured that singleton itself, so every prior release of this tool ran guard-core's slower legacy pattern-matching path instead of the enhanced path a real adapter runs, and could report a different verdict than a live request would for the same payload. 0.1.10 is the first release where `check_payload`'s verdicts come from that same enhanced path. `validate_config`'s docstring also now names the new `whitelist` `/0` construction warning alongside the existing `trusted_proxies` one.
+- **Changed** - `uv.lock` now resolves guard-core 3.15.0 and fastapi-guard 7.8.2 from PyPI (`uv lock --refresh --upgrade-package guard-core --upgrade-package fastapi-guard`; `--refresh` mattered here since the uv package index lagged a few minutes behind the fresh PyPI publish). No other dependency, including `mcp`, moved.
+
+___
+
 v0.1.9 (2026-08-26)
 -------------------
 

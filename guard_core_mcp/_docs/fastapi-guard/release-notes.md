@@ -10,6 +10,33 @@ Release Notes
 
 ___
 
+v7.8.2 (2026-08-27)
+-------------------
+
+Route-relative path resolution under root_path and mounts, Starlette and FastAPI floors (v7.8.2)
+------------------------------------------------------------------------------------------------
+
+- **Fixed** - `StarletteGuardRequest.url_path` and the WebSocket adapter's `_WebSocketGuardRequest.url_path` returned `request.url.path` / `websocket.url.path`, which under an ASGI `root_path` (`uvicorn --root-path`, or a mounted sub-app) includes the mount prefix. guard-core matches that value against `SecurityConfig.exclude_paths` and `endpoint_rate_limits` (an exact dict-key match) and passes it to `custom_request_check` hooks, so a key such as `/api/vault/login` never matched a request actually served at `/mounted/api/vault/login` and every path-keyed control silently stopped applying under a mount. Both adapters now return Starlette's own `get_route_path(scope)`, the same route-relative path Starlette's router already matches routes against.
+- **Compatibility** - If `exclude_paths` or `endpoint_rate_limits` keys currently include your `root_path` mount prefix (a workaround for the bug above), remove the prefix after upgrading: those keys now match the route-relative path and a prefixed key silently stops matching. The same applies to `custom_request_check` hooks that branch on `url_path`.
+- **Compatibility** - `starlette>=0.35.0` and `fastapi>=0.109.0` are now declared floors (no ceilings). Route-relative path resolution uses `starlette.routing.get_route_path`, which Starlette added in 0.35.0; 0.109.0 is the first FastAPI release that requires that Starlette. Older pairs fail at `import guard` with an `ImportError`.
+- **Changed** - Detection input and the reason text of the `Suspicious activity detected` log line now use the route-relative path, while the `GET <url>` part of the same line still shows the full URL including the mount prefix (`url_full` is unchanged), so the two differ under a mount by design.
+
+___
+
+v7.8.1 (2026-08-27)
+-------------------
+
+Websocket guard follow-ups: whitelist parity, explicit-config factory, close-code contract, state.client_ip (v7.8.1)
+----------------------------------------------------------------------------------------------------------------------
+
+- **Added** - `make_guard_websocket(config: SecurityConfig, redis_handler: RedisManager | None = None)` returns a `Depends`-ready WebSocket dependency bound to an explicit `SecurityConfig`, for a route on an app that never calls `app.add_middleware(SecurityMiddleware, config=...)`; `guard_websocket` is unchanged and still resolves its config from the registered middleware, raising `RuntimeError` without one. Both entry points share one private check coroutine, so every rule applies to both.
+- **Added** - `guard` exports module-level `(code, reason)` constants for the five WebSocket close outcomes `guard_websocket`/`make_guard_websocket` can emit (`WS_CLOSE_IP_BANNED`, `WS_CLOSE_IP_NOT_ALLOWED`, `WS_CLOSE_RATE_LIMIT_EXCEEDED`, `WS_CLOSE_CLIENT_ADDRESS_UNKNOWN`, `WS_CLOSE_SECURITY_CHECK_FAILED`, collected in `WS_CLOSE_REASONS`), documented as a stable contract in `docs/tutorial/websockets.md` that a close handler can key logging on.
+- **Added** - `websocket.state.client_ip` is now set to the resolved client identity (including `"unknown"`) immediately after resolution, before any check runs, so a route handler can read it after `accept()`.
+- **Fixed** - `guard_websocket` and `make_guard_websocket` now skip the rate-limit check for a client that passes a configured global `whitelist`, mirroring guard-core's HTTP rule (`RateLimitCheck.check` returns early once a request is resolved as whitelisted); previously a whitelisted WebSocket client could still be rate-limited.
+- **Fixed** - The websocket rate-limit check no longer constructs a `RedisManager` itself. `RedisManager` is a process-wide singleton; constructing one with a different `SecurityConfig` rebinds its connection for every other caller in the process, so `guard_websocket` previously risked overwriting the HTTP pipeline's own Redis manager, and `make_guard_websocket` on an app without `SecurityMiddleware` could construct an uninitialized manager and raise `GuardRedisError` on every connect. `guard_websocket` now resolves the middleware's already-initialized manager instead of constructing one; `make_guard_websocket` takes an optional `redis_handler` parameter and falls back to the in-memory store (logging one warning at dependency creation) when `enable_redis=True` and none is given.
+
+___
+
 v7.8.0 (2026-08-26)
 -------------------
 

@@ -67,8 +67,9 @@ def validate_config(
 
     Also surfaces guard-core's own construction-time misconfiguration warnings
     (logged rather than raised) under construction_warnings: an unknown constructor
-    keyword, a trusted_proxies /0 network, and enabled_detection_categories empty
-    while penetration detection is enabled all land here as plain messages.
+    keyword, a trusted_proxies /0 network, a whitelist /0 network, and
+    enabled_detection_categories empty while penetration detection is enabled all
+    land here as plain messages.
 
     package is one of fastapi-guard, guard-core, guard-agent.
     """
@@ -150,10 +151,24 @@ async def check_payload(
     body takes either a raw string or a JSON object or array, which is serialized for
     you, so pass the request body in whatever shape you already have it.
 
-    guard-core 3.14.0 scans at most detection_max_scan_values request values (default
-    512, names and values counted) per request across the whole detection pass. A
-    payload beyond that cap only gets a verdict on the scanned prefix; anything past
-    the cap is not inspected.
+    guard-core 3.15.0 bounds this scan three ways: detection_max_scan_values caps the
+    request values inspected (default 512, names and values counted), and
+    detection_max_scan_chars separately caps the total characters handed to the
+    pattern engine across those values (default 65536); a value that would start
+    after either budget is spent is skipped, so a payload beyond either cap only gets
+    a verdict on the scanned prefix. detection_max_json_depth (default 32) caps how
+    deep a JSON body is walked structurally; a dict or list reached at that depth is
+    serialized back to text and scanned as one value instead of being descended into
+    further.
+
+    Since guard-core 3.15.0, detect_penetration_attempt also configures guard-core's
+    detection singleton from the config it is given, the first time it runs or
+    whenever the config object changes, instead of requiring the caller to configure
+    it separately first. check_payload never configured that singleton itself, so
+    before 3.15.0 it always ran guard-core's slower legacy pattern path rather than
+    the enhanced path a real adapter runs, and could report a different verdict than
+    a live request would. From 3.15.0 on, check_payload's verdicts come from that
+    same enhanced path.
     """
     try:
         return await detection_module.check_payload(
