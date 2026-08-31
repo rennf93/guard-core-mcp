@@ -161,7 +161,7 @@ Bypassing Security Checks
 Selectively disable specific security checks for certain routes:
 
 . Valid Bypass Tokens
---------------------
+-------------------
 
 | Token | Skips |
 |---|---|
