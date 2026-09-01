@@ -3,6 +3,17 @@ Release Notes
 
 ___
 
+v0.1.11 (2026-09-01)
+-------------------
+
+Vendored docs re-synced to guard-core 3.16.0, guard-core locked at 3.16.0 (v0.1.11)
+-----------------------------------------------------------------------------------
+
+- **Changed** - Vendored `_docs` re-synced from the sibling repos: guard-core 3.16.0, fastapi-guard 7.8.2 (unchanged), guard-agent docs bundle 2.9.1 (unchanged). This picks up guard-core 3.16.0's release-notes entry: the new optional `SecurityConfig.on_block` callback fired exactly once per blocked or passively flagged request, and the TTLCache check-then-use closures on the security-headers, IP-ban and dedup cache reads that previously raised `KeyError` at a TTL boundary and failed the ban check open. The sync also carries the matching `on_block` row in the vendored `configuration/security-config.md` reference.
+- **Changed** - `uv.lock` now resolves guard-core 3.16.0 from PyPI (`uv lock --upgrade-package guard-core`). No other dependency, including `mcp`, moved. No behavior changes to the server itself: `on_block` is a new optional `SecurityConfig` field, so `validate_config` accepts it as a known field out of the box, and guard-core 3.16.0 introduces no new construction-time warnings for `validate_config` to surface.
+
+___
+
 v0.1.10 (2026-08-27)
 -------------------
 
