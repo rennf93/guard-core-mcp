@@ -3,6 +3,16 @@ Release Notes
 
 ___
 
+v0.1.12 (2026-09-01)
+-------------------
+
+Vendored docs re-synced to guard-core 3.17.0 and guard-agent 2.10.0 (v0.1.12)
+-----------------------------------------------------------------------------
+
+- **Changed** - Vendored `_docs` re-synced from the sibling repos: guard-core 3.17.0, guard-agent 2.10.0, fastapi-guard 7.8.2 (unchanged). This picks up guard-core 3.17.0's release-notes entry: dynamic rules now persist a last-known snapshot on every successful apply (Redis whenever a redis handler is present, plus an opt-in JSON file behind the new `dynamic_rules_cache_path` field) and hydrate it once at startup before the update loop starts, so a process restarted during a SaaS outage comes up with the last applied rules instead of base config; expired, malformed, or newer-schema snapshots are discarded with an error logged. The sync also carries the matching `dynamic_rules_cache_path` row in the vendored `configuration/security-config.md` reference, and guard-agent 2.10.0's release-notes entry: every `guard_agent` log line now carries an origin prefix (`[guard_agent.client] ...`), `setup_agent_logging` gained a JSON format and optional file sink, and the automatic setup run by the handler constructors is non-destructive to host logging configuration.
+
+___
+
 v0.1.11 (2026-09-01)
 -------------------
 
