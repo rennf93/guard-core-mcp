@@ -33,16 +33,16 @@ versions()
 
 ```json
 {
-  "guard_core_mcp": "0.1.11",
+  "guard_core_mcp": "0.1.12",
   "installed": {
-    "guard-core": "3.16.0",
+    "guard-core": "3.17.0",
     "fastapi-guard": "7.8.2",
-    "guard-agent": "2.9.0"
+    "guard-agent": "2.10.0"
   },
   "docs_bundled_for": {
     "fastapi-guard": "7.8.2",
-    "guard-agent": "2.9.1",
-    "guard-core": "3.16.0"
+    "guard-agent": "2.10.0",
+    "guard-core": "3.17.0"
   }
 }
 ```
@@ -65,29 +65,12 @@ def validate_config(config: dict[str, Any], package: str = "fastapi-guard") -> d
 
 Validates `config` against the installed library's real Pydantic model (`SecurityConfig` for `fastapi-guard`/`guard-core`, `AgentConfig` for `guard-agent`) and reports four separate kinds of problems: unknown keys pydantic would otherwise silently ignore (with typo suggestions), validation errors, `DeprecationWarning`s the model raises for fields that still work but shouldn't be used, and, under `construction_warnings`, guard-core's own `logger.warning` signals for construction-time misconfigurations it does not raise on: an unknown constructor keyword, a `trusted_proxies` `/0` network, a `whitelist` `/0` network, and an empty `enabled_detection_categories` with detection enabled.
 
-**Example call, a deprecated field**:
-
-```python
-validate_config({"ipinfo_token": "abc123"}, "fastapi-guard")
-```
-
-**Example response**:
+**A deprecated field**: as of guard-core 3.17.0, no `SecurityConfig` field is deprecated, so `deprecated` is `[]` for any valid config today. The shape is unchanged from before; a future deprecation would appear as an entry with the field's name and the model's own `DeprecationWarning` message, for example:
 
 ```json
 {
-  "valid": true,
-  "package": "fastapi-guard",
-  "version": "7.8.2",
-  "model": "SecurityConfig",
-  "errors": [],
-  "unknown_fields": [],
-  "deprecated": [
-    {
-      "field": "ipinfo_token",
-      "message": "ipinfo_token is deprecated and will be removed in a future release; create a custom geo_ip_handler instead."
-    }
-  ],
-  "construction_warnings": []
+  "field": "some_field",
+  "message": "some_field is deprecated and will be removed in a future release; ..."
 }
 ```
 

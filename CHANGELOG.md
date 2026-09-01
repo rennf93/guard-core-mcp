@@ -3,8 +3,21 @@ Release Notes
 
 ___
 
+v0.1.12 (2026-09-01)
+--------------------
+
+Vendored docs re-synced to guard-core 3.17.0 and guard-agent 2.10.0, both locked (v0.1.12)
+------------------------------------------------------------------------------------------
+
+- **Changed** - Vendored `_docs` re-synced from the sibling repos: guard-core 3.17.0, guard-agent 2.10.0, fastapi-guard 7.8.2 (unchanged). This picks up guard-core 3.17.0's release-notes entry: dynamic rules now persist a last-known snapshot on every successful apply (Redis whenever a redis handler is present, plus an opt-in JSON file behind the new `dynamic_rules_cache_path` field) and hydrate it once at startup before the update loop starts, so a process restarted during a SaaS outage comes up with the last applied rules instead of base config; expired, malformed, or newer-schema snapshots are discarded with an error logged. The sync also carries the matching `dynamic_rules_cache_path` row in the vendored `configuration/security-config.md` reference, and guard-agent 2.10.0's release-notes entry: every `guard_agent` log line now carries an origin prefix (`[guard_agent.client] ...`), `setup_agent_logging` gained a JSON format and optional file sink, and the automatic setup run by the handler constructors is non-destructive to host logging configuration.
+- **Changed** - `uv.lock` now resolves guard-core 3.17.0 and guard-agent 2.10.0 from PyPI (`uv lock --refresh --upgrade-package guard-core --upgrade-package guard-agent`; `--refresh` mattered again, the uv index lagged the fresh guard-core publish by a minute). No other dependency, including `mcp`, moved. No behavior changes to the server itself: `dynamic_rules_cache_path` is a new optional `SecurityConfig` field, so `validate_config` accepts it as a known field out of the box, and guard-core 3.17.0 introduces no new construction-time warnings for `validate_config` to surface. The worked `versions` examples in the docs are re-captured from this build.
+- **Changed** - guard-core 3.17.0 also un-deprecated `ipinfo_token` and `ipinfo_db_path`: they were never meant to be deprecated. `validate_config`'s `deprecated` report no longer carries an entry for either field, where a 0.1.11 install reported one for `ipinfo_token` (and would have for `ipinfo_db_path`) on the same config. This is the one user-visible change to `validate_config`'s output in this release.
+- **Changed** - pytest now runs with `filterwarnings = ["error"]`, so any warning fails the suite instead of passing silently.
+
+___
+
 v0.1.11 (2026-09-01)
--------------------
+--------------------
 
 Vendored docs re-synced to guard-core 3.16.0, guard-core locked at 3.16.0 (v0.1.11)
 -----------------------------------------------------------------------------------
@@ -15,10 +28,10 @@ Vendored docs re-synced to guard-core 3.16.0, guard-core locked at 3.16.0 (v0.1.
 ___
 
 v0.1.10 (2026-08-27)
--------------------
+--------------------
 
 Vendored docs re-synced to guard-core 3.15.0 / fastapi-guard 7.8.2, and check_payload now reflects guard-core 3.15.0's auto-configuring detection singleton (v0.1.10)
------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 - **Changed** - Vendored `_docs` re-synced from the sibling repos: guard-core 3.15.0, fastapi-guard 7.8.2, guard-agent 2.9.0 (unchanged). This picks up guard-core 3.15.0's post-3.14.0 follow-ups: the rate limiter now honors `redis_fail_open` on a Redis failure instead of always falling back to the in-memory window (breaking when `redis_fail_open=False`, the default: a Redis outage now raises `GuardRedisError` and lets `fail_secure` decide, rather than silently falling back); a new `detection_max_json_depth` (default 32) bounds how deep a JSON body is walked structurally and a new `detection_max_scan_chars` (default 65536) bounds the total characters scanned per request, alongside the existing `detection_max_scan_values`; `SecurityConfig` now warns at construction when `whitelist` contains a `/0` network, mirroring the existing `trusted_proxies` warning; a declared `trusted_proxy_depth` that over-counts the real proxy hops is now corrected by walking the `X-Forwarded-For` chain right to left instead of silently trusting a client-rotatable entry; a body whose declared `Content-Length` exceeds `detection_max_body_inspect_bytes` is now read and scanned through the adapter's bounded reader instead of skipped outright; and `setup_custom_logging` no longer double-logs into a host's own root logger handlers. And fastapi-guard 7.8.2's lockstep: `StarletteGuardRequest.url_path` and the websocket adapter's equivalent now resolve the route-relative path under an ASGI `root_path` or a mounted sub-app instead of the full mount-prefixed path, so `exclude_paths` and `endpoint_rate_limits` keys match correctly under a mount; this also picks up 7.8.1's `make_guard_websocket` factory, close-code constants, and Redis-manager fixes for the websocket guard.
 - **Fixed** - `check_payload`'s docstring described guard-core 3.14.0's `detection_max_scan_values` cap alone; it now also documents 3.15.0's `detection_max_scan_chars` (default 65536) and `detection_max_json_depth` (default 32) caps, and the fact that `detect_penetration_attempt` now configures guard-core's detection singleton from the config it receives. `check_payload` never configured that singleton itself, so every prior release of this tool ran guard-core's slower legacy pattern-matching path instead of the enhanced path a real adapter runs, and could report a different verdict than a live request would for the same payload. 0.1.10 is the first release where `check_payload`'s verdicts come from that same enhanced path. `validate_config`'s docstring also now names the new `whitelist` `/0` construction warning alongside the existing `trusted_proxies` one.
@@ -54,7 +67,7 @@ v0.1.7 (2026-08-15)
 -------------------
 
 check_payload body-scan fix for guard-core 3.12.0, documentation accuracy sweep, and vendored docs re-synced to the 3.12.0 line (v0.1.7)
-------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------
 
 - **Fixed** - Every worked example in the installation guide and tool reference still showed the versions frozen at the 0.1.5 sweep: `versions()`'s own `guard_core_mcp` field showed `0.1.5` although the server had since moved to 0.1.6, and `installed`/`docs_bundled_for` still showed guard-core 3.11.0 and fastapi-guard 7.5.1 despite the sibling repos having released 3.12.0 and 7.6.0. The `version` field in both `validate_config` examples and the `config_fields` example carried the same stale 7.5.1, and the `search_docs` example's second result score was stale at 76 now that fastapi-guard's growing release notes push it to 79. All five example blocks now show real, live output captured against the installed 3.12.0/7.6.0/2.8.1 line.
 - **Fixed** - `config_fields`'s tool docstring said `matches` lists every field "whose name or description contains the query", which is not what the implementation does: it splits the query into words and requires every word to appear somewhere in the combined name and description, independent of order or adjacency. `config_fields("limit rate", ...)` matches `rate_limit` even though the literal substring "limit rate" appears nowhere in its name or description. The docstring now says "contains every word of the query (case-insensitively, word order does not matter)", matching what [Tools](https://rennf93.github.io/guard-core-mcp/latest/tools/) already documented correctly.
@@ -97,7 +110,7 @@ v0.1.4 (2026-08-09)
 -------------------
 
 Sync vendored docs to guard-core 3.10.0 and fastapi-guard 7.5.0 (v0.1.4)
----------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 - **Changed** - Vendored `_docs` re-synced from the sibling repos: guard-core 3.10.0, fastapi-guard 7.5.0, guard-agent 2.8.0. The `search_docs` and `get_doc` tools now surface guard-core's config-derived security pipeline (`SecurityCheck.applies_to`, which lets a deployment build only the checks its configuration can actually trigger), the new `redis`, `cloud` and `geo` install extras, and the corrected `muted_check_logs` description in the telemetry architecture page.
 - **Changed** - fastapi-guard's vendored pages pick up the decorator adoption that makes per-route configuration visible when the pipeline is built, and the shared-state registry's compound `(id(config), id(guard_decorator))` key, which stops two middleware instances sharing one `SecurityConfig` from also sharing a pipeline built under different route visibility.
@@ -122,7 +135,7 @@ v0.1.2 (2026-07-28)
 -------------------
 
 Unpinned mcp (v0.1.2)
---------------------------------------------------------
+---------------------
 
 - **Changed** — `mcp` is declared without a version bound again, matching how every other dependency in the Guard ecosystem is declared. Installs resolve the latest SDK, which is what the server targets.
 
@@ -132,7 +145,7 @@ v0.1.1 (2026-07-28)
 -------------------
 
 MCP SDK 2.0 compatibility (v0.1.1)
---------------------------------------------------------
+----------------------------------
 
 - **Fixed** — The server failed to start against `mcp` 2.0.0 with `ModuleNotFoundError: No module named 'mcp.server.fastmcp'`. The SDK renamed `FastMCP` to `MCPServer` and moved it to `mcp.server.mcpserver`; `guard-core-mcp` now imports it from there.
 - **Changed** — `mcp` is now required at `>=2`, since the pre-2.0 import path no longer exists.
@@ -143,7 +156,7 @@ v0.1.0 (2026-07-25)
 -------------------
 
 Config, documentation and detection tools (v0.1.0)
---------------------------------------------------------
+--------------------------------------------------
 
 - **Added** — `validate_config` — validates a config dict against the real Pydantic `SecurityConfig` / `AgentConfig` model for `fastapi-guard`, `guard-core`, or `guard-agent`, reporting unknown keys (with typo suggestions), validation errors, and deprecation warnings.
 - **Added** — `config_fields` — looks up a config field by exact name or fuzzy query, returning its type, default, required-ness, and description straight from the installed Pydantic model.
@@ -157,7 +170,7 @@ v0.0.1 (2026-07-25)
 -------------------
 
 Name reservation (v0.0.1)
---------------------------
+-------------------------
 
 - **Added** — Initial scaffold published to PyPI to reserve the `guard-core-mcp` name. Only the `versions` tool — reporting which Guard libraries are installed and at what version — is implemented.
 

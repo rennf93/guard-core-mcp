@@ -5,7 +5,7 @@ import warnings
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 import guard_core_mcp.config
 from guard_core_mcp.config import (
@@ -63,10 +63,46 @@ def test_typo_is_reported_even_though_pydantic_ignores_it() -> None:
     ]
 
 
-def test_deprecated_field_is_reported_with_its_name() -> None:
-    report = validate_config({"ipinfo_token": "abc"})
+class _DeprecatedFieldsModel(BaseModel):
+    old_value: int = 0
+    other_old_value: int = 0
+    strict_value: int = 0
 
-    assert report["deprecated"][0]["field"] == "ipinfo_token"
+    @field_validator("old_value")
+    @classmethod
+    def _warn_old_value(cls, value: int) -> int:
+        warnings.warn(
+            "old_value is deprecated and will be removed",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return value
+
+    @field_validator("other_old_value")
+    @classmethod
+    def _warn_other_old_value(cls, value: int) -> int:
+        warnings.warn(
+            "other_old_value is deprecated and will be removed",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return value
+
+
+def _use_deprecated_fields_model(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        guard_core_mcp.config,
+        "resolve_model",
+        lambda package: (_DeprecatedFieldsModel, "1.0"),
+    )
+
+
+def test_deprecated_field_is_reported_with_its_name(monkeypatch) -> None:
+    _use_deprecated_fields_model(monkeypatch)
+
+    report = validate_config({"old_value": 1})
+
+    assert report["deprecated"][0]["field"] == "old_value"
     assert "deprecated" in report["deprecated"][0]["message"]
 
 
@@ -152,23 +188,29 @@ def test_query_matching_nothing_returns_no_matches() -> None:
     assert result["matches"] == []
 
 
-def test_deprecation_is_still_reported_when_another_field_fails_validation() -> None:
-    report = validate_config({"ipinfo_token": "abc", "trusted_proxy_depth": "two"})
+def test_deprecation_is_still_reported_when_another_field_fails_validation(
+    monkeypatch,
+) -> None:
+    _use_deprecated_fields_model(monkeypatch)
 
-    assert report["errors"][0]["field"] == "trusted_proxy_depth"
-    assert [entry["field"] for entry in report["deprecated"]] == ["ipinfo_token"]
+    report = validate_config({"old_value": 1, "strict_value": "two"})
+
+    assert report["errors"][0]["field"] == "strict_value"
+    assert [entry["field"] for entry in report["deprecated"]] == ["old_value"]
 
 
-def test_each_deprecation_is_reported_once() -> None:
+def test_each_deprecation_is_reported_once(monkeypatch) -> None:
+    _use_deprecated_fields_model(monkeypatch)
+
     report = validate_config(
-        {"ipinfo_token": "abc", "ipinfo_db_path": "/tmp/db", "redis_prefix": 7}
+        {"old_value": 1, "other_old_value": 2, "strict_value": "two"}
     )
 
     messages = [entry["message"] for entry in report["deprecated"]]
     assert len(messages) == len(set(messages))
     assert sorted(entry["field"] for entry in report["deprecated"]) == [
-        "ipinfo_db_path",
-        "ipinfo_token",
+        "old_value",
+        "other_old_value",
     ]
 
 

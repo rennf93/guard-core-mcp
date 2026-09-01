@@ -1,6 +1,6 @@
 [project]
 name = "guard-core-mcp"
-version = "0.1.11"
+version = "0.1.12"
 description = "MCP server for the Guard ecosystem - config validation, docs search and live threat detection for fastapi-guard, guard-core and guard-agent."
 authors = [
     {name = "Renzo Franceschini", email = "rennf93@users.noreply.github.com"}
@@ -101,6 +101,7 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 asyncio_default_fixture_loop_scope = "function"
 addopts = "--cov=guard_core_mcp --cov-branch --cov-report=term-missing"
+filterwarnings = ["error"]
 markers = [
     "e2e: drives a real server subprocess over the MCP stdio transport",
 ]

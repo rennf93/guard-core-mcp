@@ -252,12 +252,13 @@ def _insert_changelog_scaffold(path: Path, version: str, label: str) -> bool:
         print(f"  {label}: v{version} entry already exists")
         return True
 
+    title = f"TITLE (v{version})"
     scaffold = (
         f"{header}\n"
-        f"-------------------\n"
+        f"{'-' * len(header)}\n"
         f"\n"
-        f"TITLE (v{version})\n"
-        f"------------\n"
+        f"{title}\n"
+        f"{'-' * len(title)}\n"
         f"\n"
         f"CONTENT\n"
         f"\n"

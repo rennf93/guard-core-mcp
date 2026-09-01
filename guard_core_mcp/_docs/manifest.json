@@ -5,10 +5,10 @@
   },
   "guard-agent": {
     "site_url": "https://rennf93.github.io/guard-agent/latest/",
-    "version": "2.9.1"
+    "version": "2.10.0"
   },
   "guard-core": {
     "site_url": "https://rennf93.github.io/guard-core/latest/",
-    "version": "3.16.0"
+    "version": "3.17.0"
   }
 }
