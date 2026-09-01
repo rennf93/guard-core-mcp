@@ -1,0 +1,1405 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Release notes for Guard Core MCP, detailing new features, improvements, and bug fixes">
+      
+      
+      
+        <link rel="canonical" href="https://rennf93.github.io/guard-core-mcp/latest/0.1.12/release-notes/">
+      
+      
+        <link rel="prev" href="../tools/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/guard_core_favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Release Notes - Guard Core MCP - Guard Core MCP</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../css/custom.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  <script
+    src="https://analytics.guard-core.com/api/script.js"
+    data-site-id="852006e69f52"
+    defer
+></script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="dark-blue" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#release-notes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+            
+  <div class="gc-announce">
+    Running Guard in production?
+    <a href="https://guard-core.com/?utm_source=docs&amp;utm_medium=guard-core-mcp&amp;utm_campaign=docs_announce">The hosted platform</a>
+    adds live dashboards, alerting and dynamic rules you can push without a redeploy.
+    <a href="https://playground.guard-core.com/?utm_source=docs&amp;utm_medium=guard-core-mcp&amp;utm_campaign=docs_announce_playground">Try the playground</a>
+    first, no account needed.
+  </div>
+
+          </div>
+          
+        </aside>
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Guard Core MCP" class="md-header__button md-logo" aria-label="Guard Core MCP" data-md-component="logo">
+      
+  <img src="../assets/guard_core_logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Guard Core MCP
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Release Notes - Guard Core MCP
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="dark-blue" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="dark-blue" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/rennf93/guard-core-mcp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    rennf93/guard-core-mcp
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../tools/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Tools
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Release Notes
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Guard Core MCP" class="md-nav__button md-logo" aria-label="Guard Core MCP" data-md-component="logo">
+      
+  <img src="../assets/guard_core_logo.svg" alt="logo">
+
+    </a>
+    Guard Core MCP
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/rennf93/guard-core-mcp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    rennf93/guard-core-mcp
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Notes
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v0112-2026-09-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.12 (2026-09-01)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vendored-docs-re-synced-to-guard-core-3170-and-guard-agent-2100-both-locked-v0112" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vendored docs re-synced to guard-core 3.17.0 and guard-agent 2.10.0, both locked (v0.1.12)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0111-2026-09-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.11 (2026-09-01)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vendored-docs-re-synced-to-guard-core-3160-guard-core-locked-at-3160-v0111" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vendored docs re-synced to guard-core 3.16.0, guard-core locked at 3.16.0 (v0.1.11)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0110-2026-08-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.10 (2026-08-27)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vendored-docs-re-synced-to-guard-core-3150-fastapi-guard-782-and-check_payload-now-reflects-guard-core-3150s-auto-configuring-detection-singleton-v0110" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vendored docs re-synced to guard-core 3.15.0 / fastapi-guard 7.8.2, and check_payload now reflects guard-core 3.15.0's auto-configuring detection singleton (v0.1.10)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v019-2026-08-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.9 (2026-08-26)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vendored-docs-re-synced-to-guard-core-3140-fastapi-guard-780-and-validate_config-now-surfaces-guard-cores-construction-time-warnings-v019" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vendored docs re-synced to guard-core 3.14.0 / fastapi-guard 7.8.0, and validate_config now surfaces guard-core's construction-time warnings (v0.1.9)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v018-2026-08-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.8 (2026-08-25)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vendored-docs-re-synced-to-the-guard-core-3130-fastapi-guard-770-guard-agent-290-line-and-worked-examples-refreshed-v018" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vendored docs re-synced to the guard-core 3.13.0 / fastapi-guard 7.7.0 / guard-agent 2.9.0 line, and worked examples refreshed (v0.1.8)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v017-2026-08-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.7 (2026-08-15)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check_payload-body-scan-fix-for-guard-core-3120-documentation-accuracy-sweep-and-vendored-docs-re-synced-to-the-3120-line-v017" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        check_payload body-scan fix for guard-core 3.12.0, documentation accuracy sweep, and vendored docs re-synced to the 3.12.0 line (v0.1.7)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v016-2026-08-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.6 (2026-08-10)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unblock-make-check-all-under-the-mcp-2x-line-pin-mcp2-isolate-semgrep-bump-cryptography-v016" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unblock make check-all under the mcp 2.x line: pin mcp&gt;=2, isolate semgrep, bump cryptography (v0.1.6)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v015-2026-08-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.5 (2026-08-09)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-accuracy-sweep-corrected-tool-descriptions-and-vendored-docs-re-synced-to-the-3110-line-v015" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation accuracy sweep, corrected tool descriptions, and vendored docs re-synced to the 3.11.0 line (v0.1.5)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v014-2026-08-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.4 (2026-08-09)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sync-vendored-docs-to-guard-core-3100-and-fastapi-guard-750-v014" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sync vendored docs to guard-core 3.10.0 and fastapi-guard 7.5.0 (v0.1.4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v013-2026-08-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.3 (2026-08-03)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sync-vendored-docs-to-guard-core-381-refresh-dev-deps-v013" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sync vendored docs to guard-core 3.8.1 + refresh dev deps (v0.1.3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v012-2026-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.2 (2026-07-28)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unpinned-mcp-v012" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unpinned mcp (v0.1.2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v011-2026-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.1 (2026-07-28)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mcp-sdk-20-compatibility-v011" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP SDK 2.0 compatibility (v0.1.1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v010-2026-07-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.0 (2026-07-25)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config-documentation-and-detection-tools-v010" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config, documentation and detection tools (v0.1.0)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v001-2026-07-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.0.1 (2026-07-25)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#name-reservation-v001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Name reservation (v0.0.1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v0112-2026-09-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.12 (2026-09-01)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vendored-docs-re-synced-to-guard-core-3170-and-guard-agent-2100-both-locked-v0112" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vendored docs re-synced to guard-core 3.17.0 and guard-agent 2.10.0, both locked (v0.1.12)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0111-2026-09-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.11 (2026-09-01)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vendored-docs-re-synced-to-guard-core-3160-guard-core-locked-at-3160-v0111" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vendored docs re-synced to guard-core 3.16.0, guard-core locked at 3.16.0 (v0.1.11)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v0110-2026-08-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.10 (2026-08-27)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vendored-docs-re-synced-to-guard-core-3150-fastapi-guard-782-and-check_payload-now-reflects-guard-core-3150s-auto-configuring-detection-singleton-v0110" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vendored docs re-synced to guard-core 3.15.0 / fastapi-guard 7.8.2, and check_payload now reflects guard-core 3.15.0's auto-configuring detection singleton (v0.1.10)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v019-2026-08-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.9 (2026-08-26)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vendored-docs-re-synced-to-guard-core-3140-fastapi-guard-780-and-validate_config-now-surfaces-guard-cores-construction-time-warnings-v019" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vendored docs re-synced to guard-core 3.14.0 / fastapi-guard 7.8.0, and validate_config now surfaces guard-core's construction-time warnings (v0.1.9)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v018-2026-08-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.8 (2026-08-25)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vendored-docs-re-synced-to-the-guard-core-3130-fastapi-guard-770-guard-agent-290-line-and-worked-examples-refreshed-v018" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vendored docs re-synced to the guard-core 3.13.0 / fastapi-guard 7.7.0 / guard-agent 2.9.0 line, and worked examples refreshed (v0.1.8)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v017-2026-08-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.7 (2026-08-15)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check_payload-body-scan-fix-for-guard-core-3120-documentation-accuracy-sweep-and-vendored-docs-re-synced-to-the-3120-line-v017" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        check_payload body-scan fix for guard-core 3.12.0, documentation accuracy sweep, and vendored docs re-synced to the 3.12.0 line (v0.1.7)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v016-2026-08-10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.6 (2026-08-10)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unblock-make-check-all-under-the-mcp-2x-line-pin-mcp2-isolate-semgrep-bump-cryptography-v016" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unblock make check-all under the mcp 2.x line: pin mcp&gt;=2, isolate semgrep, bump cryptography (v0.1.6)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v015-2026-08-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.5 (2026-08-09)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-accuracy-sweep-corrected-tool-descriptions-and-vendored-docs-re-synced-to-the-3110-line-v015" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation accuracy sweep, corrected tool descriptions, and vendored docs re-synced to the 3.11.0 line (v0.1.5)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v014-2026-08-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.4 (2026-08-09)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sync-vendored-docs-to-guard-core-3100-and-fastapi-guard-750-v014" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sync vendored docs to guard-core 3.10.0 and fastapi-guard 7.5.0 (v0.1.4)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v013-2026-08-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.3 (2026-08-03)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sync-vendored-docs-to-guard-core-381-refresh-dev-deps-v013" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sync vendored docs to guard-core 3.8.1 + refresh dev deps (v0.1.3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v012-2026-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.2 (2026-07-28)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unpinned-mcp-v012" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unpinned mcp (v0.1.2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v011-2026-07-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.1 (2026-07-28)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mcp-sdk-20-compatibility-v011" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP SDK 2.0 compatibility (v0.1.1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v010-2026-07-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.1.0 (2026-07-25)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config-documentation-and-detection-tools-v010" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config, documentation and detection tools (v0.1.0)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v001-2026-07-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.0.1 (2026-07-25)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#name-reservation-v001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Name reservation (v0.0.1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="release-notes">Release Notes<a class="headerlink" href="#release-notes" title="Permanent link">&para;</a></h1>
+<hr />
+<h2 id="v0112-2026-09-01">v0.1.12 (2026-09-01)<a class="headerlink" href="#v0112-2026-09-01" title="Permanent link">&para;</a></h2>
+<h2 id="vendored-docs-re-synced-to-guard-core-3170-and-guard-agent-2100-both-locked-v0112">Vendored docs re-synced to guard-core 3.17.0 and guard-agent 2.10.0, both locked (v0.1.12)<a class="headerlink" href="#vendored-docs-re-synced-to-guard-core-3170-and-guard-agent-2100-both-locked-v0112" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Changed</strong> - Vendored <code>_docs</code> re-synced from the sibling repos: guard-core 3.17.0, guard-agent 2.10.0, fastapi-guard 7.8.2 (unchanged). This picks up guard-core 3.17.0's release-notes entry: dynamic rules now persist a last-known snapshot on every successful apply (Redis whenever a redis handler is present, plus an opt-in JSON file behind the new <code>dynamic_rules_cache_path</code> field) and hydrate it once at startup before the update loop starts, so a process restarted during a SaaS outage comes up with the last applied rules instead of base config; expired, malformed, or newer-schema snapshots are discarded with an error logged. The sync also carries the matching <code>dynamic_rules_cache_path</code> row in the vendored <code>configuration/security-config.md</code> reference, and guard-agent 2.10.0's release-notes entry: every <code>guard_agent</code> log line now carries an origin prefix (<code>[guard_agent.client] ...</code>), <code>setup_agent_logging</code> gained a JSON format and optional file sink, and the automatic setup run by the handler constructors is non-destructive to host logging configuration.</li>
+<li><strong>Changed</strong> - <code>uv.lock</code> now resolves guard-core 3.17.0 and guard-agent 2.10.0 from PyPI (<code>uv lock --refresh --upgrade-package guard-core --upgrade-package guard-agent</code>; <code>--refresh</code> mattered again, the uv index lagged the fresh guard-core publish by a minute). No other dependency, including <code>mcp</code>, moved. No behavior changes to the server itself: <code>dynamic_rules_cache_path</code> is a new optional <code>SecurityConfig</code> field, so <code>validate_config</code> accepts it as a known field out of the box, and guard-core 3.17.0 introduces no new construction-time warnings for <code>validate_config</code> to surface. The worked <code>versions</code> examples in the docs are re-captured from this build.</li>
+<li><strong>Changed</strong> - guard-core 3.17.0 also un-deprecated <code>ipinfo_token</code> and <code>ipinfo_db_path</code>: they were never meant to be deprecated. <code>validate_config</code>'s <code>deprecated</code> report no longer carries an entry for either field, where a 0.1.11 install reported one for <code>ipinfo_token</code> (and would have for <code>ipinfo_db_path</code>) on the same config. This is the one user-visible change to <code>validate_config</code>'s output in this release.</li>
+<li><strong>Changed</strong> - pytest now runs with <code>filterwarnings = ["error"]</code>, so any warning fails the suite instead of passing silently.</li>
+</ul>
+<hr />
+<h2 id="v0111-2026-09-01">v0.1.11 (2026-09-01)<a class="headerlink" href="#v0111-2026-09-01" title="Permanent link">&para;</a></h2>
+<h2 id="vendored-docs-re-synced-to-guard-core-3160-guard-core-locked-at-3160-v0111">Vendored docs re-synced to guard-core 3.16.0, guard-core locked at 3.16.0 (v0.1.11)<a class="headerlink" href="#vendored-docs-re-synced-to-guard-core-3160-guard-core-locked-at-3160-v0111" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Changed</strong> - Vendored <code>_docs</code> re-synced from the sibling repos: guard-core 3.16.0, fastapi-guard 7.8.2 (unchanged), guard-agent docs bundle 2.9.1 (unchanged). This picks up guard-core 3.16.0's release-notes entry: the new optional <code>SecurityConfig.on_block</code> callback fired exactly once per blocked or passively flagged request, and the TTLCache check-then-use closures on the security-headers, IP-ban and dedup cache reads that previously raised <code>KeyError</code> at a TTL boundary and failed the ban check open. The sync also carries the matching <code>on_block</code> row in the vendored <code>configuration/security-config.md</code> reference.</li>
+<li><strong>Changed</strong> - <code>uv.lock</code> now resolves guard-core 3.16.0 from PyPI (<code>uv lock --upgrade-package guard-core</code>). No other dependency, including <code>mcp</code>, moved. No behavior changes to the server itself: <code>on_block</code> is a new optional <code>SecurityConfig</code> field, so <code>validate_config</code> accepts it as a known field out of the box, and guard-core 3.16.0 introduces no new construction-time warnings for <code>validate_config</code> to surface.</li>
+</ul>
+<hr />
+<h2 id="v0110-2026-08-27">v0.1.10 (2026-08-27)<a class="headerlink" href="#v0110-2026-08-27" title="Permanent link">&para;</a></h2>
+<h2 id="vendored-docs-re-synced-to-guard-core-3150-fastapi-guard-782-and-check_payload-now-reflects-guard-core-3150s-auto-configuring-detection-singleton-v0110">Vendored docs re-synced to guard-core 3.15.0 / fastapi-guard 7.8.2, and check_payload now reflects guard-core 3.15.0's auto-configuring detection singleton (v0.1.10)<a class="headerlink" href="#vendored-docs-re-synced-to-guard-core-3150-fastapi-guard-782-and-check_payload-now-reflects-guard-core-3150s-auto-configuring-detection-singleton-v0110" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Changed</strong> - Vendored <code>_docs</code> re-synced from the sibling repos: guard-core 3.15.0, fastapi-guard 7.8.2, guard-agent 2.9.0 (unchanged). This picks up guard-core 3.15.0's post-3.14.0 follow-ups: the rate limiter now honors <code>redis_fail_open</code> on a Redis failure instead of always falling back to the in-memory window (breaking when <code>redis_fail_open=False</code>, the default: a Redis outage now raises <code>GuardRedisError</code> and lets <code>fail_secure</code> decide, rather than silently falling back); a new <code>detection_max_json_depth</code> (default 32) bounds how deep a JSON body is walked structurally and a new <code>detection_max_scan_chars</code> (default 65536) bounds the total characters scanned per request, alongside the existing <code>detection_max_scan_values</code>; <code>SecurityConfig</code> now warns at construction when <code>whitelist</code> contains a <code>/0</code> network, mirroring the existing <code>trusted_proxies</code> warning; a declared <code>trusted_proxy_depth</code> that over-counts the real proxy hops is now corrected by walking the <code>X-Forwarded-For</code> chain right to left instead of silently trusting a client-rotatable entry; a body whose declared <code>Content-Length</code> exceeds <code>detection_max_body_inspect_bytes</code> is now read and scanned through the adapter's bounded reader instead of skipped outright; and <code>setup_custom_logging</code> no longer double-logs into a host's own root logger handlers. And fastapi-guard 7.8.2's lockstep: <code>StarletteGuardRequest.url_path</code> and the websocket adapter's equivalent now resolve the route-relative path under an ASGI <code>root_path</code> or a mounted sub-app instead of the full mount-prefixed path, so <code>exclude_paths</code> and <code>endpoint_rate_limits</code> keys match correctly under a mount; this also picks up 7.8.1's <code>make_guard_websocket</code> factory, close-code constants, and Redis-manager fixes for the websocket guard.</li>
+<li><strong>Fixed</strong> - <code>check_payload</code>'s docstring described guard-core 3.14.0's <code>detection_max_scan_values</code> cap alone; it now also documents 3.15.0's <code>detection_max_scan_chars</code> (default 65536) and <code>detection_max_json_depth</code> (default 32) caps, and the fact that <code>detect_penetration_attempt</code> now configures guard-core's detection singleton from the config it receives. <code>check_payload</code> never configured that singleton itself, so every prior release of this tool ran guard-core's slower legacy pattern-matching path instead of the enhanced path a real adapter runs, and could report a different verdict than a live request would for the same payload. 0.1.10 is the first release where <code>check_payload</code>'s verdicts come from that same enhanced path. <code>validate_config</code>'s docstring also now names the new <code>whitelist</code> <code>/0</code> construction warning alongside the existing <code>trusted_proxies</code> one.</li>
+<li><strong>Changed</strong> - <code>uv.lock</code> now resolves guard-core 3.15.0 and fastapi-guard 7.8.2 from PyPI (<code>uv lock --refresh --upgrade-package guard-core --upgrade-package fastapi-guard</code>; <code>--refresh</code> mattered here since the uv package index lagged a few minutes behind the fresh PyPI publish). No other dependency, including <code>mcp</code>, moved.</li>
+</ul>
+<hr />
+<h2 id="v019-2026-08-26">v0.1.9 (2026-08-26)<a class="headerlink" href="#v019-2026-08-26" title="Permanent link">&para;</a></h2>
+<h2 id="vendored-docs-re-synced-to-guard-core-3140-fastapi-guard-780-and-validate_config-now-surfaces-guard-cores-construction-time-warnings-v019">Vendored docs re-synced to guard-core 3.14.0 / fastapi-guard 7.8.0, and validate_config now surfaces guard-core's construction-time warnings (v0.1.9)<a class="headerlink" href="#vendored-docs-re-synced-to-guard-core-3140-fastapi-guard-780-and-validate_config-now-surfaces-guard-cores-construction-time-warnings-v019" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Changed</strong> - Vendored <code>_docs</code> re-synced from the sibling repos: guard-core 3.14.0, fastapi-guard 7.8.0, guard-agent 2.9.0 (unchanged). This picks up guard-core 3.14.0's post-3.13.0 hardening pass: <code>SecurityConfig</code> now warns at construction on a <code>trusted_proxies</code> <code>/0</code> network (<code>0.0.0.0/0</code>, <code>::/0</code>) and on an empty <code>enabled_detection_categories</code> with detection enabled; a request with no client address is now rejected instead of skipping the entire security pipeline, with a new <code>unix</code> <code>trusted_proxies</code> token for Unix-socket deployments; <code>X-Forwarded-For</code> chain warnings for a depth that cannot be satisfied or that resolves to another trusted proxy; rate-limit and behavior-tracker in-memory stores are now LRU-bounded at 10,000 clients; <code>detection_max_scan_values</code> bounds the number of request values scanned per request (default 512); ban address canonicalization closes a silent no-op between IP spellings; and GeoIP, Redis-outage-at-startup and Azure cloud-IP-range resilience fixes. And fastapi-guard 7.8.0's lockstep for the same guard-core release: repeated <code>X-Forwarded-For</code> header lines are now joined before guard-core resolves the client, a <code>guard_websocket</code> dependency closes the gap where <code>SecurityMiddleware</code> never ran for WebSocket scopes, and a Redis outage at startup now returns a clean 503 instead of crashing.</li>
+<li><strong>Fixed</strong> - <code>validate_config</code> only captured <code>warnings.warn</code> records (<code>DeprecationWarning</code>), missing guard-core's <code>logger.warning</code> signals for its own construction-time misconfiguration checks: an unknown constructor keyword, the 3.14.0 <code>trusted_proxies</code> <code>/0</code> warning, and the empty <code>enabled_detection_categories</code> warning. A temporary <code>logging.Handler</code> is now attached to the <code>guard_core</code> logger for the duration of <code>SecurityConfig</code> construction, and its deduplicated records are reported under a new <code>construction_warnings</code> field; the logger's original handlers and level are always restored afterward. The <code>validate_config</code> and <code>check_payload</code> tool docstrings now document this and guard-core 3.14.0's <code>detection_max_scan_values</code> request-value scan cap (default 512, names and values counted; a payload beyond it gets a verdict on the scanned prefix only).</li>
+<li><strong>Changed</strong> - <code>uv.lock</code> is deliberately untouched. guard-core 3.14.0 and fastapi-guard 7.8.0 are not yet published to PyPI, so <code>uv lock</code> cannot resolve them, and a blanket <code>uv lock --upgrade</code> would still downgrade <code>mcp</code>. Run <code>uv lock --upgrade-package guard-core --upgrade-package fastapi-guard</code> once both are published.</li>
+</ul>
+<hr />
+<h2 id="v018-2026-08-25">v0.1.8 (2026-08-25)<a class="headerlink" href="#v018-2026-08-25" title="Permanent link">&para;</a></h2>
+<h2 id="vendored-docs-re-synced-to-the-guard-core-3130-fastapi-guard-770-guard-agent-290-line-and-worked-examples-refreshed-v018">Vendored docs re-synced to the guard-core 3.13.0 / fastapi-guard 7.7.0 / guard-agent 2.9.0 line, and worked examples refreshed (v0.1.8)<a class="headerlink" href="#vendored-docs-re-synced-to-the-guard-core-3130-fastapi-guard-770-guard-agent-290-line-and-worked-examples-refreshed-v018" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Changed</strong> - Vendored <code>_docs</code> re-synced from the sibling repos: guard-core 3.13.0, fastapi-guard 7.7.0, guard-agent 2.9.0. This picks up guard-core 3.13.0's auth-verifier machinery (<code>require_auth</code> and <code>api_key_auth</code> now require a resolvable verifier and fail-closed 401 without one; <code>require_authorization_header</code> is the presence-only escape hatch; the approved principal lands on <code>request.state.auth_principal</code>), the new <code>threat_ban_config</code> per-category ban-thresholds field and the <code>enable_rate_limit_auto_ban</code> flag that feeds rate-limit violations into the penetration-detection auto-ban engine, and the <code>check_ip_access</code> / <code>check_rate_limit_by_ip</code> / <code>is_ip_allowed</code> helpers re-exported in <code>guard_core.__all__</code>; fastapi-guard 7.7.0's auth-verifier lockstep for the same guard-core release; and guard-agent 2.9.0 carrying <code>guard_core_version</code> on its telemetry.</li>
+<li><strong>Changed</strong> - <code>uv.lock</code> and the development environment refreshed to resolve guard-core 3.13.0, fastapi-guard 7.7.0 and guard-agent 2.9.0. Each package was upgraded individually (<code>uv lock --upgrade-package</code>, with <code>--no-cache</code> for guard-agent while PyPI propagation caught up after its publish) rather than via a blanket <code>uv lock --upgrade</code>, which still downgrades <code>mcp</code> from 2.0.0 to 1.23.3 and breaks the server at import. <code>mcp</code> stays at 2.0.0; <code>pyproject.toml</code> runtime dependencies remain unpinned and unchanged.</li>
+<li><strong>Fixed</strong> - The worked examples in the installation guide and tool reference were frozen at the 0.1.7 line (guard-core 3.12.0, fastapi-guard 7.6.0, guard-agent 2.8.1). All five example blocks now show real, live output captured against the installed 3.13.0 / 7.7.0 / 2.9.0 line: <code>versions()</code> reports <code>guard_core_mcp</code> 0.1.8 and the new installed and bundled versions; the <code>validate_config</code> typo example's <code>did_you_mean</code> now lists two suggestions (<code>enable_rate_limiting</code> and the new <code>enable_rate_limit_auto_ban</code>) where it previously listed one; the <code>config_fields</code> example's <code>matches</code> now includes <code>threat_ban_config</code> and <code>enable_rate_limit_auto_ban</code>, which both mention <code>rate_limit</code> and so surface for that query for the first time; and the <code>search_docs</code> example's second-result score moved from 79 to 80 as fastapi-guard's release notes grew.</li>
+</ul>
+<hr />
+<h2 id="v017-2026-08-15">v0.1.7 (2026-08-15)<a class="headerlink" href="#v017-2026-08-15" title="Permanent link">&para;</a></h2>
+<h2 id="check_payload-body-scan-fix-for-guard-core-3120-documentation-accuracy-sweep-and-vendored-docs-re-synced-to-the-3120-line-v017">check_payload body-scan fix for guard-core 3.12.0, documentation accuracy sweep, and vendored docs re-synced to the 3.12.0 line (v0.1.7)<a class="headerlink" href="#check_payload-body-scan-fix-for-guard-core-3120-documentation-accuracy-sweep-and-vendored-docs-re-synced-to-the-3120-line-v017" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Fixed</strong> - Every worked example in the installation guide and tool reference still showed the versions frozen at the 0.1.5 sweep: <code>versions()</code>'s own <code>guard_core_mcp</code> field showed <code>0.1.5</code> although the server had since moved to 0.1.6, and <code>installed</code>/<code>docs_bundled_for</code> still showed guard-core 3.11.0 and fastapi-guard 7.5.1 despite the sibling repos having released 3.12.0 and 7.6.0. The <code>version</code> field in both <code>validate_config</code> examples and the <code>config_fields</code> example carried the same stale 7.5.1, and the <code>search_docs</code> example's second result score was stale at 76 now that fastapi-guard's growing release notes push it to 79. All five example blocks now show real, live output captured against the installed 3.12.0/7.6.0/2.8.1 line.</li>
+<li><strong>Fixed</strong> - <code>config_fields</code>'s tool docstring said <code>matches</code> lists every field "whose name or description contains the query", which is not what the implementation does: it splits the query into words and requires every word to appear somewhere in the combined name and description, independent of order or adjacency. <code>config_fields("limit rate", ...)</code> matches <code>rate_limit</code> even though the literal substring "limit rate" appears nowhere in its name or description. The docstring now says "contains every word of the query (case-insensitively, word order does not matter)", matching what <a href="https://rennf93.github.io/guard-core-mcp/latest/tools/">Tools</a> already documented correctly.</li>
+<li><strong>Fixed</strong> - <code>pyproject.toml</code>'s package description used an em dash between the product name and its feature list; replaced with a plain hyphen.</li>
+<li><strong>Changed</strong> - Vendored <code>_docs</code> re-synced from the sibling repos: guard-core 3.12.0, fastapi-guard 7.6.0, guard-agent 2.8.1 (unchanged). This picks up guard-core's exclusion-path enforcement fix (an excluded path now still enforces IP bans, blacklists, blocked countries, blocked cloud providers and rate limits; only detection and behavioral tracking are skipped there), the identity-block escalation fix so a route-level IP block is no longer bypassed by a stale global-whitelist flag left over from the earlier global check, and fastapi-guard's bounded body reading for chunked requests plus working response-body <code>return_pattern</code> rules.</li>
+<li><strong>Changed</strong> - <code>uv.lock</code> and the development environment refreshed to resolve guard-core 3.12.0 and fastapi-guard 7.6.0; <code>guard-agent</code> was already current at 2.8.1. Upgraded individually rather than via a blanket <code>uv lock --upgrade</code>, which still downgrades <code>mcp</code> from 2.0.0 to 1.23.3 and breaks the server at import. <code>pyproject.toml</code> runtime dependencies remain unpinned and unchanged.</li>
+<li><strong>Fixed</strong> - <code>check_payload</code>'s sandbox request was not compliant with guard-core 3.12.0's body-read contract, so the detection stage silently skipped the request body. guard-core 3.12.0's <code>detect_penetration_attempt</code> reads <code>content-length</code> to decide whether to scan the body and caches the capped body on <code>request.state</code>; the synthetic request carried no <code>content-length</code> header and returned <code>None</code> for <code>state</code>, so detection took the no-content-length branch and never inspected the body, and the body-cache path would have raised <code>AttributeError</code> if reached. The synthetic request now injects a <code>content-length</code> header when a body is present and exposes a mutable <code>state</code> namespace, so the detection tool actually inspects the request body against guard-core 3.12.0. This is a runtime behaviour change for <code>check_payload</code> (the body was not scanned before), not a documentation change.</li>
+</ul>
+<hr />
+<h2 id="v016-2026-08-10">v0.1.6 (2026-08-10)<a class="headerlink" href="#v016-2026-08-10" title="Permanent link">&para;</a></h2>
+<h2 id="unblock-make-check-all-under-the-mcp-2x-line-pin-mcp2-isolate-semgrep-bump-cryptography-v016">Unblock make check-all under the mcp 2.x line: pin mcp&gt;=2, isolate semgrep, bump cryptography (v0.1.6)<a class="headerlink" href="#unblock-make-check-all-under-the-mcp-2x-line-pin-mcp2-isolate-semgrep-bump-cryptography-v016" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Fixed</strong> - <code>pyproject.toml</code> now declares <code>mcp&gt;=2</code> rather than <code>mcp</code> unpinned. A blanket <code>uv lock --upgrade</code> previously downgraded <code>mcp</code> from 2.0.0 to 1.23.3, which removes <code>mcp.server.mcpserver.MCPServer</code> and breaks the server at import with <code>ModuleNotFoundError: No module named 'mcp.server.mcpserver'</code>. The lower bound stops the resolver from ever selecting a 1.x release. No runtime behaviour change for any environment already on mcp 2.x.</li>
+<li><strong>Fixed</strong> - <code>make analysis</code> stopped working under mcp 2.x. semgrep imports <code>mcp.server.fastmcp</code> at CLI startup, a module mcp 2.0.0 removed, so <code>uv run semgrep</code> crashed with <code>ModuleNotFoundError: No module named 'mcp.server.fastmcp'</code> before scanning anything; semgrep also pins <code>mcp==1.23.3</code> in its own metadata, which cannot coexist with this server's <code>mcp&gt;=2</code> in one virtualenv. semgrep is now invoked through <code>uvx --from semgrep</code> in an isolated environment that resolves its own mcp 1.23.3, and it has been removed from the project dev dependencies so the lock no longer carries the conflicting pin. The commented pre-commit hook was updated to the same <code>uvx</code> invocation. semgrep's one audit finding on <code>config.py</code> (<code>importlib.import_module</code> of a dynamic module name) is a false positive: <code>module_name</code> is one of three hardcoded <code>PACKAGE_MODELS</code> allowlist entries, not caller-controlled, so no arbitrary module can be loaded. It is suppressed with a <code># nosemgrep</code> annotation and a one-line reason, so <code>make analysis</code> now prints no findings.</li>
+<li><strong>Security</strong> - <code>cryptography</code> bumped from 49.0.0 to 50.0.0 to clear PYSEC-2026-3552, which pip-audit flagged and which failed <code>make security</code>. The upgrade is targeted (<code>uv lock --upgrade-package cryptography</code>); mcp and all other dependencies are unchanged. <code>cryptography</code> is a transitive dependency, so no guard-core-mcp source or runtime dependency declaration changed.</li>
+<li><strong>Changed</strong> - <code>uv.lock</code> refreshed so its recorded constraint matches <code>mcp&gt;=2</code>, semgrep and its transitive dependencies are no longer recorded, and <code>cryptography</code> is bumped to 50.0.0. The resolved version of mcp is unchanged at 2.0.0.</li>
+</ul>
+<hr />
+<h2 id="v015-2026-08-09">v0.1.5 (2026-08-09)<a class="headerlink" href="#v015-2026-08-09" title="Permanent link">&para;</a></h2>
+<h2 id="documentation-accuracy-sweep-corrected-tool-descriptions-and-vendored-docs-re-synced-to-the-3110-line-v015">Documentation accuracy sweep, corrected tool descriptions, and vendored docs re-synced to the 3.11.0 line (v0.1.5)<a class="headerlink" href="#documentation-accuracy-sweep-corrected-tool-descriptions-and-vendored-docs-re-synced-to-the-3110-line-v015" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Fixed</strong> - Three tool descriptions did not match their implementations. <code>config_fields</code> did not mention that <code>exact</code> and <code>matches</code> are populated together rather than exclusively, and omitted the <code>required</code> key it returns for every field. <code>check_payload</code> did not mention that it forces <code>enable_redis</code> off regardless of what the caller passes. <code>versions</code> did not mention that it also reports the server's own version. A tool's description is what a model reads before deciding to call it, so a wrong description is a functional defect rather than a cosmetic one.</li>
+<li><strong>Fixed</strong> - <code>search_docs</code> silently returns an empty result set for an unrecognized <code>package</code>, while <code>validate_config</code> and <code>config_fields</code> raise a clear error for the same mistake. An agent that typo'd a package name concluded the documentation covered nothing on the topic. The behaviour is unchanged, but the docstring now states it, and <a href="https://rennf93.github.io/guard-core-mcp/latest/tools/">Tools</a> documents the difference between the four <code>package</code>-taking tools.</li>
+<li><strong>Fixed</strong> - The <code>versions</code> example in the installation guide and tool reference showed invented numbers that no real call would produce, and the surrounding prose did not explain what <code>installed</code> and <code>docs_bundled_for</code> each mean. Both now show real output, and the prose explains that the two are independent, that either side trailing the other is normal, and that a <code>null</code> under <code>installed</code> is the actual warning sign.</li>
+<li><strong>Changed</strong> - Vendored <code>_docs</code> re-synced from the sibling repos: guard-core 3.11.0, fastapi-guard 7.5.1, guard-agent 2.8.1. This picks up guard-core's ten newly reachable <code>agent_*</code> configuration fields and the <code>on_error</code> forwarding fix, fastapi-guard's corrected agent buffer guidance, and guard-agent's corrected middleware attachment examples.</li>
+<li><strong>Changed</strong> - <code>uv.lock</code> refreshed so the development environment resolves the current guard-core, fastapi-guard and guard-agent releases rather than three versions behind. <code>pyproject.toml</code> dependencies remain unpinned. Note that a blanket <code>uv lock --upgrade</code> downgrades <code>mcp</code> from 2.0.0 to 1.23.3, which removes <code>mcp.server.mcpserver.MCPServer</code> and breaks the server at import; the guard packages were upgraded individually instead.</li>
+<li>No runtime behaviour change. The only source change is docstring text.</li>
+</ul>
+<hr />
+<h2 id="v014-2026-08-09">v0.1.4 (2026-08-09)<a class="headerlink" href="#v014-2026-08-09" title="Permanent link">&para;</a></h2>
+<h2 id="sync-vendored-docs-to-guard-core-3100-and-fastapi-guard-750-v014">Sync vendored docs to guard-core 3.10.0 and fastapi-guard 7.5.0 (v0.1.4)<a class="headerlink" href="#sync-vendored-docs-to-guard-core-3100-and-fastapi-guard-750-v014" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Changed</strong> - Vendored <code>_docs</code> re-synced from the sibling repos: guard-core 3.10.0, fastapi-guard 7.5.0, guard-agent 2.8.0. The <code>search_docs</code> and <code>get_doc</code> tools now surface guard-core's config-derived security pipeline (<code>SecurityCheck.applies_to</code>, which lets a deployment build only the checks its configuration can actually trigger), the new <code>redis</code>, <code>cloud</code> and <code>geo</code> install extras, and the corrected <code>muted_check_logs</code> description in the telemetry architecture page.</li>
+<li><strong>Changed</strong> - fastapi-guard's vendored pages pick up the decorator adoption that makes per-route configuration visible when the pipeline is built, and the shared-state registry's compound <code>(id(config), id(guard_decorator))</code> key, which stops two middleware instances sharing one <code>SecurityConfig</code> from also sharing a pipeline built under different route visibility.</li>
+<li><strong>Changed</strong> - <code>uv.lock</code> regenerated so the recorded package version matches <code>pyproject.toml</code>. <code>pyproject.toml</code> dependencies remain unpinned.</li>
+<li>No runtime code or behavior change. Runtime dependencies (<code>mcp</code>, <code>pydantic</code>) are unchanged and the server does not depend on guard-core at runtime, so this release only refreshes the embedded documentation.</li>
+</ul>
+<hr />
+<h2 id="v013-2026-08-03">v0.1.3 (2026-08-03)<a class="headerlink" href="#v013-2026-08-03" title="Permanent link">&para;</a></h2>
+<h2 id="sync-vendored-docs-to-guard-core-381-refresh-dev-deps-v013">Sync vendored docs to guard-core 3.8.1 + refresh dev deps (v0.1.3)<a class="headerlink" href="#sync-vendored-docs-to-guard-core-381-refresh-dev-deps-v013" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Changed</strong> — Vendored <code>_docs</code> re-synced from the sibling repos on master: guard-core 3.8.1, fastapi-guard 7.4.0, guard-agent 2.7.1. The <code>search_docs</code> and <code>get_doc</code> tools now surface guard-core 3.8.1's release notes (the gated lazy_init warning, the completed preempted-header warning advice, and the global <code>whitelist_countries</code> restrict fix) plus the corrected <code>whitelist_countries</code> configuration table.</li>
+<li><strong>Changed</strong> — Development extras in <code>uv.lock</code> bumped to match: guard-core 3.5.0 → 3.8.1, fastapi-guard 7.3.0 → 7.4.0, guard-agent 2.7.0 → 2.7.1. <code>pyproject.toml</code> dependencies remain unpinned.</li>
+<li>No runtime code or behavior change. Runtime dependencies (<code>mcp</code>, <code>pydantic</code>) are unchanged and the server does not depend on guard-core at runtime, so this release only refreshes the embedded documentation and the development dependency lockfile.</li>
+</ul>
+<hr />
+<h2 id="v012-2026-07-28">v0.1.2 (2026-07-28)<a class="headerlink" href="#v012-2026-07-28" title="Permanent link">&para;</a></h2>
+<h2 id="unpinned-mcp-v012">Unpinned mcp (v0.1.2)<a class="headerlink" href="#unpinned-mcp-v012" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Changed</strong> — <code>mcp</code> is declared without a version bound again, matching how every other dependency in the Guard ecosystem is declared. Installs resolve the latest SDK, which is what the server targets.</li>
+</ul>
+<hr />
+<h2 id="v011-2026-07-28">v0.1.1 (2026-07-28)<a class="headerlink" href="#v011-2026-07-28" title="Permanent link">&para;</a></h2>
+<h2 id="mcp-sdk-20-compatibility-v011">MCP SDK 2.0 compatibility (v0.1.1)<a class="headerlink" href="#mcp-sdk-20-compatibility-v011" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Fixed</strong> — The server failed to start against <code>mcp</code> 2.0.0 with <code>ModuleNotFoundError: No module named 'mcp.server.fastmcp'</code>. The SDK renamed <code>FastMCP</code> to <code>MCPServer</code> and moved it to <code>mcp.server.mcpserver</code>; <code>guard-core-mcp</code> now imports it from there.</li>
+<li><strong>Changed</strong> — <code>mcp</code> is now required at <code>&gt;=2</code>, since the pre-2.0 import path no longer exists.</li>
+</ul>
+<hr />
+<h2 id="v010-2026-07-25">v0.1.0 (2026-07-25)<a class="headerlink" href="#v010-2026-07-25" title="Permanent link">&para;</a></h2>
+<h2 id="config-documentation-and-detection-tools-v010">Config, documentation and detection tools (v0.1.0)<a class="headerlink" href="#config-documentation-and-detection-tools-v010" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Added</strong> — <code>validate_config</code> — validates a config dict against the real Pydantic <code>SecurityConfig</code> / <code>AgentConfig</code> model for <code>fastapi-guard</code>, <code>guard-core</code>, or <code>guard-agent</code>, reporting unknown keys (with typo suggestions), validation errors, and deprecation warnings.</li>
+<li><strong>Added</strong> — <code>config_fields</code> — looks up a config field by exact name or fuzzy query, returning its type, default, required-ness, and description straight from the installed Pydantic model.</li>
+<li><strong>Added</strong> — Bundled documentation for <code>fastapi-guard</code>, <code>guard-core</code>, and <code>guard-agent</code> (95 vendored pages, kept in sync via <code>scripts/sync_docs.py</code>), plus <code>search_docs</code> and <code>get_doc</code> to query it.</li>
+<li><strong>Added</strong> — <code>check_payload</code> — runs a request through guard-core's real detection engine in a Redis-disabled sandbox, reporting whether it would be blocked and by which pattern.</li>
+<li><strong>Added</strong> — Repo scaffolding matching the rest of the Guard ecosystem: community files, pre-commit and CI tooling configuration, and packaging metadata.</li>
+</ul>
+<hr />
+<h2 id="v001-2026-07-25">v0.0.1 (2026-07-25)<a class="headerlink" href="#v001-2026-07-25" title="Permanent link">&para;</a></h2>
+<h2 id="name-reservation-v001">Name reservation (v0.0.1)<a class="headerlink" href="#name-reservation-v001" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Added</strong> — Initial scaffold published to PyPI to reserve the <code>guard-core-mcp</code> name. Only the <code>versions</code> tool — reporting which Guard libraries are installed and at what version — is implemented.</li>
+</ul>
+<hr />
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright footer-custom">
+        <a href="https://github.com/rennf93/guard-core-mcp">Guard Core MCP</a> by
+        <a href="https://github.com/rennf93"> Renzo Franceschini</a>
+        <br>
+        Documentation was built using <a href="https://squidfunk.github.io/mkdocs-material/">MkDocs</a>
+      </div>
+      
+      
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/rennf93/guard-core-mcp" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/guard-core-mcp/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy", "content.code.annotate", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "search.highlight", "search.share", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "json_file": "/guard-core-mcp/versions.json", "provider": "mike", "version_selector": true}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
