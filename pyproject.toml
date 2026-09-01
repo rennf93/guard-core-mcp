@@ -101,6 +101,7 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 asyncio_default_fixture_loop_scope = "function"
 addopts = "--cov=guard_core_mcp --cov-branch --cov-report=term-missing"
+filterwarnings = ["error"]
 markers = [
     "e2e: drives a real server subprocess over the MCP stdio transport",
 ]
