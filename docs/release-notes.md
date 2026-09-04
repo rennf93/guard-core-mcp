@@ -10,6 +10,17 @@ Release Notes
 
 ___
 
+v1.0.0 (2026-09-04)
+-------------------
+
+Vendored docs re-synced to guard-core 4.0.0, guard-agent 3.0.0 and fastapi-guard 8.0.0 (v1.0.0)
+-----------------------------------------------------------------------------------------------
+
+- **Changed** - Vendored `_docs` re-synced from the sibling repos at the trees that ship as guard-core 4.0.0, guard-agent 3.0.0 and fastapi-guard 8.0.0. The guard-core corpus now describes grammar-based secret redaction across every log line, telemetry event, on_block payload, span, metric and Redis key name, the per-context detection matrix with every disclosed miss and false positive named, the single telemetry contract (`pattern_matched`, `metadata.category`, `handler_name`, decorator events through the bus), the `log_sensitive_headers`, `log_sensitive_params` and `log_sensitive_body_fields` knobs, the deprecation of unconfigured (legacy) detection, and the breaking changes an operator must read before upgrading: `excluded_detection_headers` no longer silences a header, `require_headers` enforces non-sentinel values, the endpoint rate-limit Redis key hashes the path segment, `detect_pattern_match` returns a redacted pattern source, and `SecurityConfig` validation errors no longer echo the rejected input value (so `validate_config` answers name the field and the reason without the value). The guard-agent corpus describes header sanitisation at ingest and egress, the buffer that no longer loses events on a failed send, overflow or cancellation, and the async requeue protocol; the fastapi-guard corpus describes the 8.0.0 lockstep.
+- **Changed** - Version 1.0.0: the major follows the guard-core 4.0.0, guard-agent 3.0.0 and fastapi-guard 8.0.0 majors this server documents. The `uv.lock` bump to those releases and the re-captured `versions` examples land once the three packages are on PyPI.
+
+___
+
 v0.1.12 (2026-09-01)
 --------------------
 
