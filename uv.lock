@@ -1110,7 +1110,7 @@ wheels = [
 
 [[package]]
 name = "guard-core-mcp"
-version = "0.1.12"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "mcp" },
