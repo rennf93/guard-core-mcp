@@ -10,6 +10,17 @@ Release Notes
 
 ___
 
+v1.0.1 (2026-09-05)
+-------------------
+
+Vendored docs re-synced to guard-core 4.0.1 (v1.0.1)
+----------------------------------------------------
+
+- **Changed** - Vendored `_docs` re-synced to the guard-core 4.0.1 tree: `api/utilities.md` gains the public `redact_blob_for_display` and `redact_url_for_display` helpers with their documented limits, `api/handlers.md` documents `ban_ip` returning a bool that is False when the self-DoS guard refuses a ban, `configuration/detection-tuning.md` states the 40 second reach-probe budget and the host-normalized timing, and the release notes carry the 4.0.1 section. The fastapi-guard corpus picks up the tutorial snippet formatting fix from fastapi-guard PR #134.
+- **Changed** - `uv.lock` moves guard-core to 4.0.1.
+
+___
+
 v1.0.0 (2026-09-04)
 -------------------
 
