@@ -10,6 +10,33 @@ Release Notes
 
 ___
 
+v4.0.1 (2026-09-04)
+-------------------
+
+Public redaction helpers, ReDoS validator latency, phantom ban, singleton resets, and path-level gates (v4.0.1)
+---------------------------------------------------------------------------------------------------------------
+
+
+### Added
+
+- **`redact_blob_for_display` and `redact_url_for_display`** exported from `guard_core.utils` and `guard_core.sync.utils`: the grammar redaction guard-core applies to its own log lines, with `None` for the three name sets meaning the hardcoded defaults. Previously reachable only through the private `guard_core._utils.request_logging` module.
+
+### Changed
+
+- **v4.0.0 changelog correction.** The "Proxy identity header false positives" line overstated the change; those headers skip only the `ssrf` category for IP-shaped values, every other category still scans them. Corrected in place below.
+- **Dev dependency `pytest` pinned below 9.** pytest 9.1.1 drops nested conftest fixtures when file arguments interleave a nested directory with its parent (pytest-dev/pytest#14971). Lifted when upstream ships the fix.
+- **The live-smoke driver clears only its own `smoke:` keys** instead of flushing the whole Redis database.
+
+### Fixed
+
+- **A catastrophic custom pattern stalled validation 40 seconds** at config validation, decorator and dynamic-rule apply time before the structural reason was returned. Structurally flagged patterns now probe one size per child with a 2.5 second bound and stop at the first timeout; the whole reach-probe phase holds one 40 second wall-clock budget across builders and retries; the combined path times only the two sizes the verdict reads, once per distinct probe set; probe children arm their own alarm so a killed parent leaves no orphan. A pattern whose honest measurement needs more than 40 seconds is refused with the timeout reason. Every measurement is normalized by a host load factor taken from a fixed reference scan timed in the same child process, so the verdict no longer depends on machine speed or CPU contention. A probe stops sampling once a single sample exceeds 0.2 seconds, so a slow pattern is measured once per size instead of five times.
+- **The reach-probe verdict flipped under CPU load.** The growth ratio and the extrapolation now use per-size minimums, clamped at 1.0, so a load-inflated small-size sample cannot flip a near-budget builtin.
+- **Singleton resets kept stale handler references.** `reset_global_state()` on the IP ban and security headers singletons now drops `redis_handler` and `agent_handler` (the security headers reset was a no-op), and `RateLimitManager.reset()` drops `agent_handler`. A completeness test discovers every singleton with a handler reference and fails by name if it has no reset path.
+- **An empty pair value followed by an angle-bracket placeholder was not redacted.** `token=<SECRET>` now redacts as `token=[REDACTED]`; the bracketed run follows the same unquoted-value rules as any other value, with the angle brackets never ending it.
+- **A ban refused by the self-DoS guard was answered as a ban.** `ban_ip` returns a bool; a refused threshold ban now yields 400 "Suspicious activity detected" instead of 403 "IP has been banned", with no ban log line or event, and dynamic-rule and behavioral bans report a refusal as refused.
+
+___
+
 v4.0.0 (2026-09-04)
 -------------------
 
@@ -38,7 +65,7 @@ Grammar-based secret redaction across log lines and events, expanded detection c
 
 - **Sensitive header, parameter, and body secret leaks.** `log_activity`, `_log_detected_component`, and query URL parameters (`?access_token=...`, `#token=...`, `https://user:PASS@host/`) now mask sensitive values with `[REDACTED]` across all log lines, telemetry previews, and event payloads.
 - **`dump_last_known_rules_snapshot` validation exception.** Stripped unknown `DynamicRules` fields (`emergency_whitelist_only`, `message`) before snapshot validation, allowing local Redis/file fallback writes to succeed during backend outages.
-- **Proxy identity header false positives.** Added proxy identity headers (`forwarded`, `x-forwarded-for`, `x-forwarded-host`, `x-forwarded-proto`, `x-real-ip`, `x-client-ip`, `x-cluster-client-ip`, `cf-connecting-ip`, `true-client-ip`, `fly-client-ip`, `x-envoy-external-address`) to the default excluded detection set to prevent auto-banning proxy IPs.
+- **Proxy identity header false positives.** Added proxy identity headers (`forwarded`, `x-forwarded-for`, `x-forwarded-host`, `x-forwarded-proto`, `x-real-ip`, `x-client-ip`, `x-cluster-client-ip`, `cf-connecting-ip`, `true-client-ip`, `fly-client-ip`, `x-envoy-external-address`) to the default excluded detection set, which in 4.0.0 skips only the `ssrf` category for IP-shaped values while every other category still scans them.
 - **`require_referrer()` scheme parsing.** Reduced scheme-prefixed entries (e.g., `https://example.com:8443`) to host and port before comparison.
 - **`SecurityConfig` collection field revalidation.** Revalidated 13 collection fields (`exclude_paths`, `cors_allow_origins`, `custom_error_responses`, etc.) on attribute reassignment and `model_copy(update=...)`.
 - **SQLi and category detection context gaps.** Expanded SQLi, command injection, and traversal detection to `header` and `url_path` contexts. Kept noise-prone patterns (`ORDER BY n` bare) restricted to bodies/params.
