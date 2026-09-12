@@ -10,6 +10,17 @@ Release Notes
 
 ___
 
+v1.0.2 (2026-09-12)
+-------------------
+
+Vendored docs re-synced to guard-core 4.0.2 (v1.0.2)
+----------------------------------------------------
+
+- **Changed** - Vendored `_docs` re-synced to the guard-core 4.0.2 tree: the release notes carry the 4.0.2 section (bounded built-in pattern matchers, the ReDoS validator hardening with the load-scaled verdict deadline, the anomaly variance skip, and the CI/test instrumentation notes), and `configuration/detection-tuning.md` replaces the fixed 40-second budget wording with the load-scaled budget and documents the nested-unbounded-quantifier refusal with the linear rewrite for path-validator shapes.
+- **Changed** - `uv.lock` moves guard-core to 4.0.2.
+
+___
+
 v1.0.1 (2026-09-05)
 -------------------
 
