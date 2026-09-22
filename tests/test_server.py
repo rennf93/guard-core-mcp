@@ -8,8 +8,10 @@ import guard_core_mcp.detection
 from guard_core_mcp import __version__
 from guard_core_mcp.server import (
     GUARD_DISTRIBUTIONS,
+    adapter_setup,
     check_payload,
     config_fields,
+    ecosystem,
     get_doc,
     installed_guard_versions,
     main,
@@ -18,6 +20,7 @@ from guard_core_mcp.server import (
     search_docs,
     validate_config,
     versions,
+    wire_agent,
 )
 
 
@@ -42,7 +45,25 @@ def test_versions_reports_the_bundled_docs_versions() -> None:
     )
 
     assert report["docs_bundled_for"] == {
-        package: bundled_manifest[package]["version"] for package in GUARD_DISTRIBUTIONS
+        package: entry["version"] for package, entry in bundled_manifest.items()
+    }
+
+
+def test_versions_reports_the_bundled_knowledge_packages() -> None:
+    report = versions()
+
+    manifest_path = (
+        Path(__file__).resolve().parent.parent
+        / "guard_core_mcp"
+        / "_knowledge"
+        / "manifest.json"
+    )
+    knowledge_manifest: dict[str, dict[str, str]] = json.loads(
+        manifest_path.read_text(encoding="utf-8")
+    )
+
+    assert report["knowledge_bundled_for"] == {
+        name: entry["version"] for name, entry in knowledge_manifest.items()
     }
 
 
@@ -138,3 +159,31 @@ async def test_check_payload_tool_reports_a_missing_library_instead_of_raising(
     result = await check_payload(path="/")
 
     assert "not installed" in result["error"]
+
+
+async def test_ecosystem_tools_are_registered() -> None:
+    registered = {tool.name for tool in await mcp.list_tools()}
+
+    assert {"ecosystem", "adapter_setup", "wire_agent"} <= registered
+
+
+def test_ecosystem_tool_returns_the_registry() -> None:
+    report = ecosystem()
+
+    assert set(report["languages"]) == {"python", "go", "typescript", "php", "rust"}
+    assert report["conformance"]["cases"] == 163
+    assert report["saas"]["base_url"] == "https://api.guard-core.com"
+
+
+def test_adapter_setup_tool_returns_the_integration() -> None:
+    result = adapter_setup("rust", "axum")
+
+    assert result["adapter"]["package"] == "axum-guard-rs"
+    assert "with_guard" in result["adapter"]["snippet"]
+
+
+def test_wire_agent_tool_returns_the_setup() -> None:
+    result = wire_agent("php", "laravel")
+
+    assert result["agent"]["package"] == "guard-agent-php"
+    assert "laravel" in result["framework_note"]

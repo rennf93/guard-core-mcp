@@ -8,32 +8,50 @@ REPOSITORIES = {
     "fastapi-guard": "https://rennf93.github.io/fastapi-guard/latest/",
     "guard-core": "https://rennf93.github.io/guard-core/latest/",
     "guard-agent": "https://rennf93.github.io/guard-agent/latest/",
+    "guard-core-ts": "https://rennf93.github.io/guard-core-ts/",
+}
+
+# Repos whose markdown lives deeper than docs/ (an Astro Starlight site keeps
+# content under docs/src/content/docs); only that subtree gets vendored.
+DOCS_SUBDIRS = {
+    "guard-core-ts": "src/content/docs",
 }
 
 PACKAGE_ROOT = Path(__file__).parent.parent / "guard_core_mcp"
 DOCS_ROOT = PACKAGE_ROOT / "_docs"
 VERSION_PATTERN = re.compile(r'^version\s*=\s*"([^"]+)"', re.MULTILINE)
+MARKDOWN_PATTERNS = ("*.md", "*.mdx")
 
 
 def read_version(repository: Path) -> str:
-    match = VERSION_PATTERN.search((repository / "pyproject.toml").read_text())
-    if match is None:
-        raise SystemExit(f"no version found in {repository}/pyproject.toml")
-    return match.group(1)
+    pyproject = repository / "pyproject.toml"
+    if pyproject.is_file():
+        match = VERSION_PATTERN.search(pyproject.read_text())
+        if match is None:
+            raise SystemExit(f"no version found in {repository}/pyproject.toml")
+        return match.group(1)
+    package_json = repository / "package.json"
+    if package_json.is_file():
+        version = json.loads(package_json.read_text()).get("version")
+        if version is None:
+            raise SystemExit(f"no version found in {repository}/package.json")
+        return str(version)
+    raise SystemExit(f"no version source found in {repository}")
 
 
 def sync(package: str, site_url: str) -> dict[str, str]:
     repository = Path("..") / package
-    source = repository / "docs"
+    source = repository / "docs" / DOCS_SUBDIRS.get(package, "")
     if not source.is_dir():
         raise SystemExit(f"{source} not found; clone {package} next to this repo")
 
     destination = DOCS_ROOT / package
     shutil.rmtree(destination, ignore_errors=True)
-    for markdown in sorted(source.rglob("*.md")):
-        target = destination / markdown.relative_to(source)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(markdown, target)
+    for pattern in MARKDOWN_PATTERNS:
+        for markdown in sorted(source.rglob(pattern)):
+            target = destination / markdown.relative_to(source)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(markdown, target)
 
     return {"site_url": site_url, "version": read_version(repository)}
 

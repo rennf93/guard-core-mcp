@@ -24,6 +24,24 @@ def test_read_version_raises_when_no_version_line_matches(tmp_path) -> None:
         sync_docs.read_version(tmp_path)
 
 
+def test_read_version_reads_the_package_json_version(tmp_path) -> None:
+    (tmp_path / "package.json").write_text('{"name": "pkg", "version": "1.0.0"}\n')
+
+    assert sync_docs.read_version(tmp_path) == "1.0.0"
+
+
+def test_read_version_raises_when_the_package_json_has_no_version(tmp_path) -> None:
+    (tmp_path / "package.json").write_text('{"name": "pkg", "private": true}\n')
+
+    with pytest.raises(SystemExit, match="no version found"):
+        sync_docs.read_version(tmp_path)
+
+
+def test_read_version_raises_when_no_version_source_exists(tmp_path) -> None:
+    with pytest.raises(SystemExit, match="no version source found"):
+        sync_docs.read_version(tmp_path)
+
+
 def test_sync_raises_when_sibling_docs_directory_is_missing(
     tmp_path, monkeypatch
 ) -> None:
@@ -46,6 +64,7 @@ def test_sync_copies_markdown_and_mirrors_directory_structure(
     (docs / "nested").mkdir(parents=True)
     (docs / "index.md").write_text("# Index\n")
     (docs / "nested" / "page.md").write_text("# Page\n")
+    (docs / "nested" / "landing.mdx").write_text("# Landing\n")
     (docs / "nested" / "image.png").write_bytes(b"not markdown")
     (repository / "pyproject.toml").write_text('version = "1.2.3"\n')
     monkeypatch.chdir(workdir)
@@ -57,7 +76,29 @@ def test_sync_copies_markdown_and_mirrors_directory_structure(
     assert entry == {"site_url": "https://example.invalid/", "version": "1.2.3"}
     assert (destination / "index.md").read_text() == "# Index\n"
     assert (destination / "nested" / "page.md").read_text() == "# Page\n"
+    assert (destination / "nested" / "landing.mdx").read_text() == "# Landing\n"
     assert not (destination / "nested" / "image.png").exists()
+
+
+def test_sync_uses_the_configured_docs_subdir(tmp_path, monkeypatch) -> None:
+    workdir = tmp_path / "workdir"
+    workdir.mkdir()
+    repository = tmp_path / "starlight-package"
+    content = repository / "docs" / "src" / "content"
+    content.mkdir(parents=True)
+    (content / "index.md").write_text("# Index\n")
+    (repository / "docs" / "README.md").write_text("# Chrome\n")
+    (repository / "package.json").write_text('{"version": "2.0.0"}\n')
+    monkeypatch.chdir(workdir)
+    monkeypatch.setattr(sync_docs, "DOCS_ROOT", tmp_path / "_docs")
+    monkeypatch.setattr(sync_docs, "DOCS_SUBDIRS", {"starlight-package": "src/content"})
+
+    entry = sync_docs.sync("starlight-package", "https://example.invalid/")
+
+    destination = tmp_path / "_docs" / "starlight-package"
+    assert entry == {"site_url": "https://example.invalid/", "version": "2.0.0"}
+    assert (destination / "index.md").read_text() == "# Index\n"
+    assert not (destination / "README.md").exists()
 
 
 def test_sync_is_idempotent_and_drops_files_removed_from_the_source(

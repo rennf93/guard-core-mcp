@@ -91,6 +91,7 @@ jobs:
           git clone --depth 1 https://github.com/rennf93/fastapi-guard ../fastapi-guard
           git clone --depth 1 https://github.com/rennf93/guard-core ../guard-core
           git clone --depth 1 https://github.com/rennf93/guard-agent ../guard-agent
+          git clone --depth 1 https://github.com/rennf93/guard-core-ts ../guard-core-ts
           uv run python scripts/sync_docs.py
           DRIFT=$(git status --porcelain guard_core_mcp/_docs)
           if [ -n "$DRIFT" ]; then

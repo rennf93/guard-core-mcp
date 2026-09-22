@@ -3,7 +3,7 @@ Guidance for AI agents (including Claude Code) working in this repository.
 
 ## Project Overview
 
-Guard Core MCP is an MCP server that answers Guard-ecosystem questions from the **libraries actually installed in the interpreter running it**, not from model memory. It provides config validation, config-field lookup, docs search, and live threat detection for the Guard security libraries.
+Guard Core MCP is an MCP server that answers Guard-ecosystem questions from the **libraries actually installed in the interpreter running it**, not from model memory. It provides config validation, config-field lookup, docs search, live threat detection, and ecosystem-wide setup guidance (engines, adapters and agents across Go, TypeScript, PHP, Rust and Python) for the Guard security libraries.
 
 - **PyPI Package**: `guard-core-mcp`
 - **Import Name**: `guard_core_mcp`
@@ -32,12 +32,15 @@ Each tool is a thin `@mcp.tool()` wrapper in `server.py` around a module functio
 
 | Tool | Signature | What it does |
 |------|-----------|--------------|
-| `versions` | `versions()` | Reports `installed` versions (live introspection) and `docs_bundled_for` (vendored snapshot) so a caller can detect skew before trusting a docs answer |
+| `versions` | `versions()` | Reports `installed` versions (live introspection), `docs_bundled_for` (vendored snapshot) and `knowledge_bundled_for` (hand-written corpus) so a caller can detect skew before trusting a docs answer |
 | `validate_config` | `validate_config(config, package)` | Validates a config dict against the installed Pydantic model; reports *unknown* keys with `difflib` suggestions (pydantic silently drops them) and captures `DeprecationWarning`s (`_retry_without_rejected_fields` re-validates remaining valid fields so one type error does not hide the rest) |
 | `config_fields` | `config_fields(query, package="fastapi-guard")` | Field lookup over the installed model's schema |
-| `search_docs` | `search_docs(...)` | Token-count search over the vendored docs corpus |
-| `get_doc` | `get_doc(package, path)` | Returns a vendored doc; guards traversal via `resolve()` + `is_relative_to` |
+| `search_docs` | `search_docs(...)` | Token-count search over the vendored docs corpus and the hand-written knowledge corpus |
+| `get_doc` | `get_doc(package, path)` | Returns a vendored doc or knowledge entry; guards traversal via `resolve()` + `is_relative_to` |
 | `check_payload` | `check_payload(payload, config)` (async) | Runs guard-core's real detection engine against a payload via `_SyntheticRequest` |
+| `ecosystem` | `ecosystem()` | Returns the full registry matrix: five languages, each with engine, adapters (verified snippets, Python counterparts) and agent, plus the spec-4.0.2 conformance block and the SaaS ingestion contract |
+| `adapter_setup` | `adapter_setup(language, framework)` | Install command plus a verified minimal middleware integration for one adapter, with its engine's install and conformance status |
+| `wire_agent` | `wire_agent(language, framework=None)` | Telemetry agent setup for a language: install, snippet, buffer/flush/overflow/retry semantics, the ingestion contract, and a per-adapter integration note |
 
 ## Architecture
 
@@ -45,12 +48,15 @@ Two independent answer sources, and the distinction drives most of the design:
 
 - **Live introspection** (`config.py`, `detection.py`) reads the installed pydantic models and calls guard-core's real detection engine. Accurate for whatever version is installed; unavailable if the library is not.
 - **Vendored docs snapshot** (`docs.py` + `guard_core_mcp/_docs/`) ships with the package and always works, but is pinned to whatever version was last synced.
+- **Registry and knowledge corpus** (`ecosystem.py` + `guard_core_mcp/_knowledge/`) are static typed data and hand-written markdown; they cover the half of the ecosystem that has no installable Python package to introspect.
 
 **`config.py` and `PACKAGE_MODELS`.** The dict maps package name to `(import module, model class)`. `validate_config` earns its keep by reporting unknown keys with `difflib` suggestions and by capturing deprecation warnings.
 
 **`detection.py` and `_SyntheticRequest`.** That class structurally implements guard-core's `GuardRequest` protocol (no inheritance). If upstream adds a protocol member, this class must gain it or mypy fails on the `request: GuardRequest` assignment. `enable_redis` is forced to `False` so the sandbox never touches Redis, regardless of the caller's config.
 
-**`docs.py` / `guard_core_mcp/_docs/`** is generated output; never hand-edit it. `scripts/sync_docs.py` copies `*.md` from sibling clones at `../fastapi-guard`, `../guard-core`, `../guard-agent` and records each repo's `pyproject.toml` version into `manifest.json`. `make sync-docs` and `make check-docs-drift` therefore require those clones next to this repo; CI's `docs-drift` job clones them itself and runs weekly on a timer, because upstream releases independently of this repo. Search is a naive per-line token count with no index; `get_doc` guards path traversal via `resolve()` + `is_relative_to`.
+**`ecosystem.py` is the ecosystem registry.** Pydantic models (`EcosystemRegistry`, `LanguageEntry`, `EngineInfo`, `AdapterInfo`, `AgentInfo`, `ConformanceInfo`, `SaaSContract`) hold the whole family as data: per language the engine, its four adapters with snippets copied verbatim from the sibling repo READMEs, and the agent. It also pins the spec-4.0.2 conformance facts (163 cases, engine commit `886f8013`, 82/82 interop) and the guard-core-app ingestion contract. Facts here are verified against the sibling repos, never inferred: `release_status` distinguishes `published` from `tagged` from `untagged`, because several Go, PHP and Rust packages carry tags or version constants that registry publication has not caught up with. When a sibling repo moves, update this file by hand; `ecosystem`/`adapter_setup`/`wire_agent` read only from it, and `tests/test_ecosystem.py` asserts the verified versions and API names.
+
+**`docs.py` serves two corpora.** `guard_core_mcp/_docs/` is generated output; never hand-edit it. `scripts/sync_docs.py` copies `*.md` and `*.mdx` from sibling clones at `../fastapi-guard`, `../guard-core`, `../guard-agent` and `../guard-core-ts` (the last one from its Astro docs subdirectory, `docs/src/content/docs`) and records each repo's version from `pyproject.toml` or `package.json` into `manifest.json`. `make sync-docs` and `make check-docs-drift` therefore require those clones next to this repo; CI's `docs-drift` job clones them itself and runs weekly on a timer, because upstream releases independently of this repo. `guard_core_mcp/_knowledge/` is the opposite: hand-written markdown for the repos that ship no docs site (the Go, PHP and Rust engines and agents, and the SaaS ingestion contract), one `index.md` per repo with its own `manifest.json` carrying the repo URL as the citation. Search is a naive per-line token count with no index; `get_doc` guards path traversal via `resolve()` + `is_relative_to`.
 
 **`server.py` is a thin tool layer.** Keep new tools in that shape, and keep the real logic in the module rather than the tool body.
 
@@ -97,7 +103,7 @@ make bump-version VERSION=x.y.z
 
 - pytest runs `asyncio_mode = "auto"`, so async tests need no marker
 - The `e2e` marker means the test spawns a real server subprocess over the MCP stdio transport; skip locally with `uv run pytest -m "not e2e"`
-- Suite layout: `test_config.py`, `test_detection.py`, `test_docs.py`, `test_server.py`, `test_e2e.py`, `test_sync_docs.py`, `test_sync_docs_script.py`
+- Suite layout: `test_config.py`, `test_detection.py`, `test_docs.py`, `test_ecosystem.py`, `test_server.py`, `test_e2e.py`, `test_sync_docs.py`, `test_sync_docs_script.py`
 - Coverage is configured in `addopts`; the Docker `make test` gates releases
 
 ### Constraints worth knowing before you edit
@@ -120,10 +126,28 @@ make bump-version VERSION=x.y.z
 
 ## Related Projects
 
-- **guard-core** - Security engine whose models and detection engine this server introspects: <https://github.com/rennf93/guard-core>
+Engines (one per language, all passing the same frozen spec-4.0.2 corpus):
+
+- **guard-core** - Python reference engine: <https://github.com/rennf93/guard-core>
+- **guard-core-go** - Go engine (tagged `v0.1.0`): <https://github.com/rennf93/guard-core-go>
+- **guard-core-ts** - TypeScript monorepo (`@guardcore/*`, tagged `1.0.0`): <https://github.com/rennf93/guard-core-ts>
+- **guard-core-php** - PHP engine (tagged `v0.1.0`): <https://github.com/rennf93/guard-core-php>
+- **guard-core-rs** - Rust workspace (untagged, path dependencies): <https://github.com/rennf93/guard-core-rs>
+
+Adapters live in their own repos (`nethttp-guard`, `gin-guard`, `echo-guard`, `fiber-guard`, `psr15-guard`, `laravel-guard`, `symfony-guard`, `slim-guard`, `tower-guard-rs`, `axum-guard-rs`, `actix-guard-rs`, `rocket-guard-rs`); the registry in `ecosystem.py` links each one.
+
+Agents (one per language, all shipping against the same ingestion contract):
+
+- **guard-agent** - Python agent covered by `PACKAGE_MODELS`: <https://github.com/rennf93/guard-agent>
+- **guard-agent-go**: <https://github.com/rennf93/guard-agent-go>
+- **guard-agent-ts** (npm `guardagent`): <https://github.com/rennf93/guard-agent-ts>
+- **guard-agent-php**: <https://github.com/rennf93/guard-agent-php>
+- **guard-agent-rs**: <https://github.com/rennf93/guard-agent-rs>
+
+Platform and Python adapters:
+
+- **guard-core-app** - SaaS platform (API, dashboard, playground) and telemetry ingestion endpoint: <https://github.com/rennf93/guard-core-app>
 - **fastapi-guard** - FastAPI/Starlette adapter covered by `PACKAGE_MODELS`: <https://github.com/rennf93/fastapi-guard>
-- **guard-agent** - Telemetry client covered by `PACKAGE_MODELS`: <https://github.com/rennf93/guard-agent>
 - **flaskapi-guard** - Flask extension adapter: <https://github.com/rennf93/flaskapi-guard>
 - **djapi-guard** - Django middleware adapter: <https://github.com/rennf93/djapi-guard>
 - **tornadoapi-guard** - Tornado handler/middleware adapter: <https://github.com/rennf93/tornadoapi-guard>
-- **guard-core-app** - SaaS platform (API, dashboard, playground): <https://github.com/rennf93/guard-core-app>

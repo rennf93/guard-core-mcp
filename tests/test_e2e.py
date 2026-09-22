@@ -39,7 +39,22 @@ async def test_server_starts_and_advertises_every_tool() -> None:
         "search_docs",
         "get_doc",
         "check_payload",
+        "ecosystem",
+        "adapter_setup",
+        "wire_agent",
     }
+
+
+@pytest.mark.e2e
+async def test_ecosystem_tools_answer_over_the_protocol() -> None:
+    async with running_server() as session:
+        matrix = await call(session, "ecosystem")
+        setup = await call(session, "adapter_setup", language="go", framework="gin")
+        agent = await call(session, "wire_agent", language="php", framework="slim")
+
+    assert set(matrix["languages"]) == {"python", "go", "typescript", "php", "rust"}
+    assert setup["adapter"]["package"] == "gin-guard"
+    assert agent["agent"]["package"] == "guard-agent-php"
 
 
 @pytest.mark.e2e
