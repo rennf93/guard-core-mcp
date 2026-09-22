@@ -1,16 +1,16 @@
 ---
 
 title: Tools - Guard Core MCP
-description: Signature, parameters, and example call and response for each of the six guard-core-mcp tools
-keywords: mcp tools, fastapi-guard, guard-core, guard-agent, validate_config, check_payload
+description: Signature, parameters, and example call and response for each of the nine guard-core-mcp tools
+keywords: mcp tools, fastapi-guard, guard-core, guard-agent, validate_config, check_payload, ecosystem, adapter_setup, wire_agent
 ---
 
 Tools
 =====
 
-All six tools are registered in `guard_core_mcp/server.py`. `validate_config`, `config_fields`, `search_docs` and `get_doc` all accept a `package` argument that should be one of `fastapi-guard`, `guard-core` or `guard-agent`, but they don't validate it the same way. `validate_config` and `config_fields` reject an unrecognized value with `{"error": "unknown package '<value>'; expected one of guard-core, fastapi-guard, guard-agent"}`. `search_docs` has no such check, an unrecognized `package` just matches nothing, so it returns `{"query": ..., "results": []}`. `get_doc` returns `{"error": "unknown doc path"}` for either an unrecognized `package` or a `path` that doesn't exist under it, the two cases aren't distinguished in the response.
+All nine tools are registered in `guard_core_mcp/server.py`. `validate_config`, `config_fields`, `search_docs` and `get_doc` all accept a `package` argument that should be one of `fastapi-guard`, `guard-core` or `guard-agent` (the docs tools also know the bundled `guard-core-ts` corpus and the `guard-core-app`, `guard-core-go`, `guard-core-php`, `guard-core-rs`, `guard-agent-go`, `guard-agent-ts`, `guard-agent-rs` and `guard-agent-php` knowledge entries), but they don't validate it the same way. `validate_config` and `config_fields` reject an unrecognized value with `{"error": "unknown package '<value>'; expected one of guard-core, fastapi-guard, guard-agent"}`. `search_docs` has no such check, an unrecognized `package` just matches nothing, so it returns `{"query": ..., "results": []}`. `get_doc` returns `{"error": "unknown doc path"}` for either an unrecognized `package` or a `path` that doesn't exist under it, the two cases aren't distinguished in the response.
 
-`validate_config`, `config_fields` and `check_payload` depend on the corresponding library being installed in the interpreter running the server. If it is not, they return a structured `{"error": ..., "hint": ...}` instead of raising, see [Installation](installation.md#why-not-uvx-guard-core-mcp) for exactly what that looks like and why.
+`validate_config`, `config_fields` and `check_payload` depend on the corresponding library being installed in the interpreter running the server. If it is not, they return a structured `{"error": ..., "hint": ...}` instead of raising, see [Installation](installation.md#why-not-uvx-guard-core-mcp) for exactly what that looks like and why. The three ecosystem tools (`ecosystem`, `adapter_setup`, `wire_agent`) are pure data served from the registry in `guard_core_mcp/ecosystem.py` and work in any environment, with or without the Guard libraries installed.
 
 ___
 
@@ -21,7 +21,7 @@ ___
 def versions() -> dict[str, Any]
 ```
 
-No parameters. Reports which Guard libraries this server can introspect, at what version, and which library versions the bundled documentation covers. A `null` installed version means that library is absent from this interpreter, so any answer about it would be a guess rather than introspection.
+No parameters. Reports which Guard libraries this server can introspect, at what version, and which library versions the bundled documentation and knowledge corpora cover. A `null` installed version means that library is absent from this interpreter, so any answer about it would be a guess rather than introspection.
 
 **Example call**:
 
@@ -33,16 +33,27 @@ versions()
 
 ```json
 {
-  "guard_core_mcp": "0.1.12",
+  "guard_core_mcp": "1.1.0",
   "installed": {
-    "guard-core": "3.17.0",
-    "fastapi-guard": "7.8.2",
-    "guard-agent": "2.10.0"
+    "guard-core": "4.0.2",
+    "fastapi-guard": "8.0.0",
+    "guard-agent": "3.0.0"
   },
   "docs_bundled_for": {
-    "fastapi-guard": "7.8.2",
-    "guard-agent": "2.10.0",
-    "guard-core": "3.17.0"
+    "fastapi-guard": "8.0.0",
+    "guard-agent": "3.0.0",
+    "guard-core": "4.0.3",
+    "guard-core-ts": "1.0.0"
+  },
+  "knowledge_bundled_for": {
+    "guard-core-app": "2026.09.19",
+    "guard-core-go": "0.1.0",
+    "guard-core-php": "0.1.0",
+    "guard-core-rs": "0.0.1",
+    "guard-agent-go": "0.1.0",
+    "guard-agent-php": "0.1.0",
+    "guard-agent-rs": "0.1.0",
+    "guard-agent-ts": "0.1.0"
   }
 }
 ```
@@ -194,10 +205,10 @@ def search_docs(query: str, package: str | None = None, limit: int = 5) -> dict[
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `query` | `str` | required | Free-text search terms |
-| `package` | `str \| None` | `None` | One of `fastapi-guard`, `guard-core`, `guard-agent`; omit to search all three |
+| `package` | `str \| None` | `None` | One of the packages above; omit to search everything |
 | `limit` | `int` | `5` | Maximum number of results |
 
-Searches the bundled documentation (`guard_core_mcp/_docs/`) by counting query-term occurrences per page, and returns the highest-scoring pages with the best-matching heading and a snippet. Each result carries `url`, the live documentation URL for that page, built from the manifest recorded when the docs were vendored, this works even when the underlying library isn't installed, since the docs ship inside the wheel.
+Searches both bundled corpora (`guard_core_mcp/_docs/` for the vendored MkDocs/Astro sites, `guard_core_mcp/_knowledge/` for the hand-written ecosystem entries) by counting query-term occurrences per page, and returns the highest-scoring pages with the best-matching heading and a snippet. Each result carries `url`, the citation URL for that page, built from the manifest recorded when the corpus was vendored, this works even when the underlying library isn't installed, since the corpora ship inside the wheel.
 
 **Example call**:
 
@@ -252,10 +263,10 @@ def get_doc(package: str, path: str) -> dict[str, Any]
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `package` | `str` | required | One of `fastapi-guard`, `guard-core`, `guard-agent` |
+| `package` | `str` | required | One of the packages `versions` reports under `docs_bundled_for` or `knowledge_bundled_for` |
 | `path` | `str` | required | A relative path from a `search_docs` result, e.g. `installation.md` |
 
-Returns the full text of one bundled documentation page. `path` is resolved relative to that package's vendored docs root and rejected, as `{"error": "unknown doc path"}`, if it would escape that root or doesn't exist, so this cannot be used to read arbitrary files.
+Returns the full text of one bundled documentation page. `path` is resolved relative to that package's vendored root and rejected, as `{"error": "unknown doc path"}`, if it would escape that root or doesn't exist, so this cannot be used to read arbitrary files.
 
 **Example call**:
 

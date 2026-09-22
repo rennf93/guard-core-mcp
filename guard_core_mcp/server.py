@@ -7,6 +7,7 @@ from guard_core_mcp import __version__
 from guard_core_mcp import config as config_module
 from guard_core_mcp import detection as detection_module
 from guard_core_mcp import docs as docs_module
+from guard_core_mcp import ecosystem as ecosystem_module
 
 GUARD_DISTRIBUTIONS = ("guard-core", "fastapi-guard", "guard-agent")
 
@@ -39,6 +40,10 @@ def versions() -> dict[str, Any]:
         "docs_bundled_for": {
             package: entry["version"]
             for package, entry in docs_module.manifest().items()
+        },
+        "knowledge_bundled_for": {
+            package: entry["version"]
+            for package, entry in docs_module.knowledge_manifest().items()
         },
     }
 
@@ -176,6 +181,71 @@ async def check_payload(
         )
     except ModuleNotFoundError as exception:
         return missing_library_error(exception)
+
+
+@mcp.tool()
+def ecosystem() -> dict[str, Any]:
+    """Return the full Guard ecosystem registry.
+
+    Every language, engine, adapter and agent, with install commands and
+    conformance status.
+
+    The matrix covers five languages (python, go, typescript, php, rust). Each
+    language entry carries its engine package (name, install command, version,
+    release status, conformance status), every framework adapter with a verified
+    quick-start snippet and the Python adapter it maps to, and the telemetry
+    agent with its delivery semantics. The conformance block describes the frozen
+    spec-4.0.2 corpus every engine is tested against, and the saas block documents
+    the guard-core-app ingestion contract all agents share.
+
+    release_status values: published (live on a package registry), tagged (git
+    tag exists, registry presence may still lag), untagged (install from source,
+    main, or a path dependency). Read release_status and notes together: several
+    Go, PHP and Rust packages carry tags or version constants that registry
+    publishing has not caught up with.
+
+    Use wire_agent or adapter_setup when you already know the language and
+    framework; use this tool to survey the ecosystem or resolve a package name.
+    """
+    return ecosystem_module.ecosystem()
+
+
+@mcp.tool()
+def adapter_setup(language: str, framework: str) -> dict[str, Any]:
+    """Return the install and a verified minimal integration for one Guard adapter.
+
+    language is one of python, go, typescript, php, rust; framework is that
+    language's adapter slug (for example go + gin, typescript + fastify, php +
+    laravel, rust + axum, python + fastapi) or the adapter package name. The
+    answer carries the adapter's install command, release status, its role in
+    the framework, the Python adapter it mirrors, a quick-start snippet taken
+    verbatim from the adapter's README, and the engine install and conformance
+    status it depends on.
+
+    Every snippet comes from the sibling repo's README at the time this server
+    was built; untagged packages move fast, so re-check the repo when the answer
+    says release_status is untagged.
+    """
+    return ecosystem_module.adapter_setup(language, framework)
+
+
+@mcp.tool()
+def wire_agent(language: str, framework: str | None = None) -> dict[str, Any]:
+    """Return how to set up the Guard telemetry agent for one language.
+
+    language is one of python, go, typescript, php, rust. The answer carries the
+    agent package and install command, its release status, a quick-start
+    snippet, a summary of its buffer, flush, overflow and retry semantics, how
+    it integrates with that language's adapters, and the full guard-core-app
+    ingestion contract (endpoints, headers, HMAC signing, size limits and
+    response semantics) the agent ships against.
+
+    framework (optional) selects an adapter of that language and adds a note
+    about how the agent hooks into it. For python this points at the bundled
+    guard-agent doc page for the adapter; for the other languages the agent is
+    standalone and the note says so.
+    """
+    return ecosystem_module.wire_agent(language, framework)
 
 
 def main() -> None:
