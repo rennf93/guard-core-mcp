@@ -6,25 +6,17 @@ ___
 v1.1.1 (2026-09-23)
 -------------------
 
-Registry re-synced to guard-core 4.0.4 and guard-agent 3.0.1 (v1.1.1)
-----------------------------------------------------------------------
+Full Guard ecosystem coverage across five languages, re-synced to guard-core 4.0.4 and guard-agent 3.0.1 (v1.1.1)
+------------------------------------------------------------------------------------------------------------------
 
+- **Added** - The `ecosystem` tool returns the full registry matrix: five languages (python, go, typescript, php, rust), each with its engine package (install command, version, release status, conformance status), four framework adapters with quick-start snippets verified verbatim against the sibling repos' READMEs and a mapping to the Python adapter they mirror, and the telemetry agent with its delivery semantics; the `saas` block documents the guard-core-app ingestion contract (endpoints, headers, uncompressed-body HMAC signing, the 262144-byte decompressed limit, and the 200/429/413/400/404/422 response semantics).
+- **Added** - The `adapter_setup(language, framework)` tool returns the install command and a verified minimal middleware integration for one adapter of one language, plus the engine install and conformance status it depends on.
+- **Added** - The `wire_agent(language, framework=None)` tool returns how to set up the telemetry agent for a language: package, install, release status, quick-start snippet, buffer/flush/overflow/retry semantics, adapter integration notes, and the full ingestion contract; the python framework variants point at the bundled guard-agent doc pages, and it surfaces the known guard-agent compressed-signature quirk.
+- **Added** - A hand-written knowledge corpus under `guard_core_mcp/_knowledge/`: one entry each for guard-core-go, guard-core-php, guard-core-rs, guard-agent-go, guard-agent-ts, guard-agent-rs, guard-agent-php and the guard-core-app ingestion contract, covering install, setup, semantics and footguns verified against each repo; `search_docs` and `get_doc` search and cite it, and `versions` reports it under `knowledge_bundled_for`.
+- **Changed** - The bundled docs corpus gains guard-core-ts 1.0.0 (the Astro Starlight site, 104 pages); `scripts/sync_docs.py` now also reads package.json versions, vendors .mdx alongside .md, and supports per-repo docs subdirectories, and the docs-drift CI job clones guard-core-ts.
 - **Changed** - The `ecosystem` registry pins the frozen spec-4.0.3 corpus (184 cases across 12 suites, engine commit `436d6f72`): the new `binary_bodies` suite is included in the suite breakdown, the Python engine entry moves to 4.0.4, the agent entry to 3.0.1, and the interop block adds the 24/24 Redis-free binary-body detect vectors per engine port.
 - **Fixed** - The Rust engine's conformance entry no longer describes the pre-implementation xfail state (39/124); it records the current 184/184 drift-gated result.
-- **Changed** - Vendored `_docs` manifest moves to guard-core 4.0.4 and guard-agent 3.0.1, and the guard-core release notes carry the 4.0.4 section (SQLi comment-terminator binary gate, console-safe detection logs, depth-capped display redaction).
-
-___
-
--------------------
-
-Full Guard ecosystem coverage across five languages (v1.1.0)
-------------------------------------------------------------
-
-- **Added** - The `ecosystem` tool returns the full registry matrix: five languages (python, go, typescript, php, rust), each with its engine package (install command, version, release status, conformance status), four framework adapters with quick-start snippets verified verbatim against the sibling repos' READMEs and a mapping to the Python adapter they mirror, and the telemetry agent with its delivery semantics; the conformance block pins the frozen spec-4.0.2 corpus (163 cases, engine commit `886f8013`, 82/82 interop) and the `saas` block documents the guard-core-app ingestion contract (endpoints, headers, uncompressed-body HMAC signing, the 262144-byte decompressed limit, and the 200/429/413/400/404/422 response semantics).
-- **Added** - The `adapter_setup(language, framework)` tool returns the install command and a verified minimal middleware integration for one adapter of one language, plus the engine install and conformance status it depends on.
-- **Added** - The `wire_agent(language, framework=None)` tool returns how to set up the telemetry agent for a language: package, install, release status, quick-start snippet, buffer/flush/overflow/retry semantics, adapter integration notes, and the full ingestion contract; the python framework variants point at the bundled guard-agent doc pages, and it surfaces the known guard-agent 3.0.0 compressed-signature quirk.
-- **Added** - A hand-written knowledge corpus under `guard_core_mcp/_knowledge/`: one entry each for guard-core-go, guard-core-php, guard-core-rs, guard-agent-go, guard-agent-ts, guard-agent-rs, guard-agent-php and the guard-core-app ingestion contract, covering install, setup, semantics and footguns verified against each repo; `search_docs` and `get_doc` search and cite it, and `versions` reports it under `knowledge_bundled_for`.
-- **Changed** - The bundled docs corpus gains guard-core-ts 1.0.0 (the Astro Starlight site, 104 pages) and re-syncs guard-core to 4.0.3; `scripts/sync_docs.py` now also reads package.json versions, vendors .mdx alongside .md, and supports per-repo docs subdirectories, and the docs-drift CI job clones guard-core-ts.
+- **Changed** - The vendored `_docs` manifest moves to guard-core 4.0.4 and guard-agent 3.0.1, and the guard-core release notes carry the 4.0.4 section (SQLi comment-terminator binary gate, console-safe detection logs, depth-capped display redaction).
 
 ___
 
