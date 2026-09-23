@@ -10,7 +10,18 @@ Release Notes
 
 ___
 
-v1.1.0 (2026-09-22)
+v1.1.1 (2026-09-23)
+-------------------
+
+Registry re-synced to guard-core 4.0.4 and guard-agent 3.0.1 (v1.1.1)
+----------------------------------------------------------------------
+
+- **Changed** - The `ecosystem` registry pins the frozen spec-4.0.3 corpus (184 cases across 12 suites, engine commit `436d6f72`); Python engine entry at 4.0.4, agent entry at 3.0.1; the interop block adds the 24/24 Redis-free binary-body detect vectors per engine port.
+- **Fixed** - The Rust engine's conformance entry no longer describes the pre-implementation xfail state; it records the current 184/184 drift-gated result.
+- **Changed** - Vendored `_docs` manifest moves to guard-core 4.0.4 and guard-agent 3.0.1, and the guard-core release notes carry the 4.0.4 section.
+
+___
+
 -------------------
 
 Full Guard ecosystem coverage across five languages (v1.1.0)

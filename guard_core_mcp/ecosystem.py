@@ -83,8 +83,8 @@ GO_ENGINE = EngineInfo(
     install="go get github.com/rennf93/guard-core-go@v0.1.0",
     release_status="tagged",
     conformance=(
-        "spec-4.0.2 corpus vendored at conformance/guard-core-spec-4.0.2 "
-        "(163 cases across 11 suites), fail-closed baseline"
+        "spec-4.0.3 corpus vendored at conformance/guard-core-spec-4.0.3 "
+        "(184 cases across 12 suites), fail-closed baseline"
     ),
     notes=(
         "module github.com/rennf93/guard-core-go, go 1.25.0; the only tag is the "
@@ -489,8 +489,8 @@ TS_ENTRY = LanguageEntry(
         install="npm install @guardcore/core",
         release_status="tagged",
         conformance=(
-            "spec-4.0.2 corpus vendored at conformance/guard-core-spec-4.0.2 "
-            "(163 cases across 11 suites) with a fail-closed baseline whose "
+            "spec-4.0.3 corpus vendored at conformance/guard-core-spec-4.0.3 "
+            "(184 cases across 12 suites) with a fail-closed baseline whose "
             "expected-failure list is empty"
         ),
         notes=(
@@ -717,7 +717,7 @@ PHP_ENTRY = LanguageEntry(
         release_status="tagged",
         conformance=(
             "the composer conformance script (bin/conformance.php) runs the "
-            "vendored spec-4.0.2 corpus (163 cases)"
+            "vendored spec-4.0.3 corpus (184 cases across 12 suites)"
         ),
         notes=PHP_ENGINE_NOTES,
     ),
@@ -921,9 +921,9 @@ RUST_ENTRY = LanguageEntry(
         ),
         release_status="untagged",
         conformance=(
-            "spec-4.0.2 corpus with an xfail baseline: 39 passed / 124 xfail of "
-            "163 (the engine lacks the 4.x pattern-table scan stage), ledgered "
-            "in conformance/pattern_ledger.toml and conformance/xfail_baseline.toml"
+            "spec-4.0.3 corpus vendored in the guard-core-conformance crate: "
+            "184/184 cases green with a fail-closed drift gate and the "
+            "pattern ledger recording the structural-match residuals"
         ),
         notes=RUST_ENGINE_NOTES,
     ),
@@ -1088,11 +1088,11 @@ PY_ENTRY = LanguageEntry(
     engine=EngineInfo(
         package="guard-core",
         repo="https://github.com/rennf93/guard-core",
-        version="4.0.3",
+        version="4.0.4",
         install="uv add guard-core",
         release_status="published",
         conformance=(
-            "reference implementation: the spec-4.0.2 fixture corpus was "
+            "reference implementation: the spec-4.0.3 fixture corpus was "
             "generated from its enhanced 4.x detection path"
         ),
         notes=(
@@ -1134,7 +1134,7 @@ PY_ENTRY = LanguageEntry(
     agent=AgentInfo(
         package="guard-agent",
         repo="https://github.com/rennf93/guard-agent",
-        version="3.0.0",
+        version="3.0.1",
         install="uv add guard-agent",
         release_status="published",
         semantics=(
@@ -1152,7 +1152,7 @@ PY_ENTRY = LanguageEntry(
         snippet_language="python",
         snippet=PY_AGENT_SNIPPET,
         notes=(
-            "3.0.0 signs the compressed wire bytes when the body exceeds the "
+            "3.0.1 signs the compressed wire bytes when the body exceeds the "
             "compression threshold, while the server verifies the uncompressed "
             "body, so see the saas.known_quirks entry before enabling "
             "require_signed_payloads"
@@ -1170,19 +1170,21 @@ REGISTRY = EcosystemRegistry(
     },
     conformance=ConformanceInfo(
         reference="guard-core (Python), the enhanced 4.x detection path",
-        spec_version="4.0.2",
-        cases=163,
-        suites=11,
-        engine_commit="886f8013",
+        spec_version="4.0.3",
+        cases=184,
+        suites=12,
+        engine_commit="436d6f72",
         corpus=(
-            "every engine vendors the same frozen spec-4.0.2 fixture corpus: "
+            "every engine vendors the same frozen spec-4.0.3 fixture corpus: "
             "xss 22, sqli 22, cmd_injection 18, misc_injection 29, "
             "inclusion_sensitive_recon 18, path_traversal 10, context_matrix 9, "
-            "benign 15, encoding 8, boundaries 6, semantic 6"
+            "benign 15, encoding 8, boundaries 8, semantic 6, "
+            "binary_bodies 19"
         ),
         interop=(
             "82/82 cases pass in the cross-language Redis interop harness "
-            "(Python reference, Go and PHP ports sharing one Redis)"
+            "(Python reference, Go and PHP ports sharing one Redis), plus "
+            "24/24 Redis-free binary-body detect vectors per engine port"
         ),
     ),
     saas=SaaSContract(
@@ -1252,7 +1254,7 @@ REGISTRY = EcosystemRegistry(
         },
         known_quirks=[
             (
-                "guard-agent 3.0.0 (Python) signs the compressed wire bytes once "
+                "guard-agent 3.0.1 (Python) still signs the compressed wire bytes once "
                 "the body exceeds the compression threshold while the server "
                 "verifies the uncompressed body, so signed and gzipped batches "
                 "from that release fail verification when require_signed_payloads "

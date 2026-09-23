@@ -10,6 +10,22 @@ Release Notes
 
 ___
 
+v4.0.4 (2026-09-23)
+-------------------
+
+Binary-noise follow-up: SQLi comment-terminator gate, console-safe detection logs, depth-capped display redaction (v4.0.4)
+---------------------------------------------------------------------------------------------------------------------------
+
+### Fixed
+
+- **PDF and text-decoded binary uploads were flagged as SQLi.** The SQLi comment-terminator pattern source matched byte runs inside binary-decoded content; it is now covered by the binary-density gate (ASCII-region matches still detect).
+- **Detection log lines could raise UnicodeEncodeError on Windows cp1252 consoles.** ``_sanitize_for_log`` now emits pure ASCII (``\xNN`` surrogate escapes, ``\uXXXX`` otherwise).
+- **Deep-nested JSON in headers produced huge half-redacted log values.** The display path now redacts the whole value when the JSON depth cap trips.
+
+___
+
+___
+
 v4.0.3 (2026-09-21)
 -------------------
 

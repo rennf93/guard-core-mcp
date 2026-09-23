@@ -171,7 +171,7 @@ def test_ecosystem_tool_returns_the_registry() -> None:
     report = ecosystem()
 
     assert set(report["languages"]) == {"python", "go", "typescript", "php", "rust"}
-    assert report["conformance"]["cases"] == 163
+    assert report["conformance"]["cases"] == 184
     assert report["saas"]["base_url"] == "https://api.guard-core.com"
 
 

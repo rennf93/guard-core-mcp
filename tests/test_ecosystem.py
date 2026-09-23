@@ -82,7 +82,7 @@ def test_registry_records_the_go_engine_facts() -> None:
     assert go.engine.version == "0.1.0"
     assert go.engine.release_status == "tagged"
     assert go.engine.install == "go get github.com/rennf93/guard-core-go@v0.1.0"
-    assert "163 cases" in go.engine.conformance
+    assert "184 cases" in go.engine.conformance
 
     assert {adapter.package for adapter in go.adapters} == {
         "nethttp-guard",
@@ -158,7 +158,7 @@ def test_registry_records_the_rust_engine_facts() -> None:
     assert rust.engine.version == "0.0.1"
     assert rust.engine.release_status == "untagged"
     assert "guard-core-engine" in rust.engine.install
-    assert "124 xfail" in rust.engine.conformance
+    assert "184/184 cases green" in rust.engine.conformance
 
     assert {adapter.package for adapter in rust.adapters} == {
         "tower-guard-rs",
@@ -180,7 +180,7 @@ def test_registry_records_the_python_engine_facts() -> None:
     python = REGISTRY.languages["python"]
 
     assert python.engine.package == "guard-core"
-    assert python.engine.version == "4.0.3"
+    assert python.engine.version == "4.0.4"
     assert python.engine.release_status == "published"
 
     versions = {adapter.package: adapter.version for adapter in python.adapters}
@@ -192,17 +192,17 @@ def test_registry_records_the_python_engine_facts() -> None:
     }
 
     assert python.agent.package == "guard-agent"
-    assert python.agent.version == "3.0.0"
+    assert python.agent.version == "3.0.1"
     assert python.agent.release_status == "published"
 
 
 def test_conformance_block_pins_the_frozen_corpus() -> None:
     conformance = REGISTRY.conformance
 
-    assert conformance.spec_version == "4.0.2"
-    assert conformance.cases == 163
-    assert conformance.suites == 11
-    assert conformance.engine_commit == "886f8013"
+    assert conformance.spec_version == "4.0.3"
+    assert conformance.cases == 184
+    assert conformance.suites == 12
+    assert conformance.engine_commit == "436d6f72"
     assert "82/82" in conformance.interop
     assert "xss 22" in conformance.corpus
     assert conformance.reference.startswith("guard-core (Python)")
@@ -224,7 +224,7 @@ def test_saas_block_documents_the_ingestion_contract() -> None:
     assert "partial failure" in saas.response_semantics["200"]
     assert "Retry-After" in saas.response_semantics["429"]
     assert "permanent" in saas.response_semantics["400/404/422"]
-    assert any("guard-agent 3.0.0" in quirk for quirk in saas.known_quirks)
+    assert any("guard-agent 3.0.1" in quirk for quirk in saas.known_quirks)
 
 
 def test_every_adapter_snippet_carries_its_verified_api_name() -> None:

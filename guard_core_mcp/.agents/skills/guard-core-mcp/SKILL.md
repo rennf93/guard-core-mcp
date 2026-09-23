@@ -42,7 +42,7 @@ The server speaks MCP over stdio (`guard_core_mcp.server:main`). To verify what 
 | `search_docs` | Naive per-line token-count search over the vendored corpus and the hand-written knowledge corpus (no index) |
 | `get_doc` | Returns a vendored doc or knowledge entry by package + path; traversal-guarded via `resolve()` + `is_relative_to` |
 | `check_payload` | Runs guard-core's real detection engine on a payload through `_SyntheticRequest` (a structural `GuardRequest` implementation) |
-| `ecosystem` | Full registry matrix: 5 languages (python, go, typescript, php, rust), each with engine, 4 adapters, agent; plus spec-4.0.2 conformance facts and the guard-core-app ingestion contract |
+| `ecosystem` | Full registry matrix: 5 languages (python, go, typescript, php, rust), each with engine, 4 adapters, agent; plus spec-4.0.3 conformance facts and the guard-core-app ingestion contract |
 | `adapter_setup` | `adapter_setup(language, framework)`: install + verified quick-start snippet for one adapter, with its engine's install and conformance status; accepts the framework slug or the package name |
 | `wire_agent` | `wire_agent(language, framework=None)`: agent install, snippet, buffer/flush/overflow/retry semantics, the ingestion contract (headers, `v1=` HMAC over the uncompressed body, 262144-byte limit, 200/429/413/400/404/422 semantics), and a per-adapter integration note |
 
