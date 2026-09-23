@@ -122,6 +122,18 @@ warn_no_return = true
 warn_unreachable = true
 exclude = [".venv"]
 
+[tool.pymarkdown.system]
+exclude_path = ".venv,.git,.github,data,tests,.claude,CLAUDE.md,.cursor,.kiro,ZZZ"
+
+[tool.pymarkdown.plugins.md003]
+enabled = false
+
+[tool.pymarkdown.plugins.md022]
+enabled = false
+
+[tool.pymarkdown.plugins.md032]
+enabled = false
+
 [tool.pymarkdown.plugins.md007]
 enabled = true
 indent = 2

@@ -24,8 +24,6 @@ Binary-noise follow-up: SQLi comment-terminator gate, console-safe detection log
 
 ___
 
-___
-
 v4.0.3 (2026-09-21)
 -------------------
 
